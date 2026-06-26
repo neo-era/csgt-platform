@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hướng dẫn sử dụng — Lighting Survey</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #dbeafe;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --surface: #ffffff;
+      --surface-2: #f9fafb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); background: #f3f4f6; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--primary); color: #fff;
+      padding: 14px 24px; display: flex; align-items: center; gap: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    }
+    nav .logo { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+    nav .sub  { font-size: 13px; opacity: .8; }
+    nav a { color: #fff; text-decoration: none; margin-left: auto; font-size: 13px; font-weight: 600;
+            background: rgba(255,255,255,.18); padding: 7px 16px; border-radius: 20px; }
+    nav a:hover { background: rgba(255,255,255,.3); }
+
+    .container { max-width: 860px; margin: 0 auto; padding: 32px 20px 60px; }
+
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+           padding: 20px 24px; margin-bottom: 32px; }
+    .toc h2 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--primary); }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin: 6px 0; }
+    .toc a { color: var(--primary); text-decoration: none; font-size: 14px; font-weight: 500; }
+    .toc a:hover { text-decoration: underline; }
+
+    section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+              padding: 28px 28px 24px; margin-bottom: 24px; }
+    section h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px;
+                 padding-bottom: 10px; border-bottom: 2px solid var(--primary-light);
+                 display: flex; align-items: center; gap: 10px; }
+    section h2 .num { background: var(--primary); color: #fff; font-size: 12px; font-weight: 700;
+                       width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    h3 { font-size: 15px; font-weight: 700; margin: 20px 0 10px; color: #1e40af; }
+    h4 { font-size: 14px; font-weight: 700; margin: 14px 0 6px; color: #1e40af; }
+    p  { font-size: 14px; line-height: 1.7; margin-bottom: 10px; color: var(--text); }
+    ul, ol { padding-left: 20px; margin-bottom: 10px; }
+    li { font-size: 14px; line-height: 1.7; margin-bottom: 4px; }
+
+    .steps { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; }
+    .step  { display: flex; gap: 14px; align-items: flex-start;
+             background: var(--surface-2); border: 1px solid var(--border);
+             border-radius: 10px; padding: 14px 16px; }
+    .step .sn { background: var(--primary); color: #fff; font-size: 13px; font-weight: 700;
+                min-width: 28px; height: 28px; border-radius: 50%; display: flex;
+                align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .step .sc { font-size: 14px; line-height: 1.6; }
+    .step .sc strong { display: block; font-weight: 600; margin-bottom: 2px; }
+
+    .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700;
+             padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-green  { background: #d1fae5; color: #065f46; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+    .badge-pink   { background: #fce7f3; color: #be185d; }
+    .badge-gray   { background: #e2e8f0; color: #334155; }
+    .badge-yellow { background: #fef9c3; color: #854d0e; }
+    .badge-red    { background: #fee2e2; color: #dc2626; }
+
+    .role-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+    .role-table th { background: #f1f5f9; padding: 8px 12px; text-align: left; font-weight: 700; border: 1px solid var(--border); }
+    .role-table td { padding: 8px 12px; border: 1px solid var(--border); text-align: center; }
+    .role-table td:first-child { text-align: left; font-weight: 600; }
+    .yes { color: #16a34a; font-weight: 700; }
+    .no  { color: #dc2626; }
+
+    .type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 12px 0; }
+    .type-card { border-radius: 10px; padding: 12px 14px; border: 1.5px solid transparent; }
+    .type-card .tc-icon { font-size: 22px; margin-bottom: 6px; }
+    .type-card .tc-label { font-size: 13px; font-weight: 700; }
+    .type-card .tc-desc  { font-size: 12px; margin-top: 3px; opacity: .75; }
+
+    .note { border-radius: 10px; padding: 14px 16px; font-size: 13px; line-height: 1.6; margin: 12px 0; display: flex; gap: 10px; }
+    .note-info    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .note-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+    .note-warn    { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+    .note-icon    { font-size: 18px; flex-shrink: 0; }
+
+    code { background: #f1f5f9; color: #0f172a; font-size: 12.5px; padding: 2px 7px;
+           border-radius: 5px; font-family: 'Courier New', monospace; }
+    kbd  { display: inline-block; background: #f8fafc; border: 1px solid #cbd5e1;
+           border-bottom: 2px solid #94a3b8; border-radius: 5px; font-size: 12px;
+           padding: 2px 8px; font-family: monospace; }
+
+    .img-box { background: var(--surface-2); border: 2px dashed var(--border);
+               border-radius: 10px; padding: 24px; text-align: center;
+               color: var(--text-muted); font-size: 13px; margin: 12px 0; }
+
+    footer { text-align: center; font-size: 12px; color: var(--text-muted); padding: 20px; }
+
+    @media (max-width: 600px) {
+      section { padding: 20px 16px; }
+      .type-grid { grid-template-columns: 1fr 1fr; }
+      .role-table { font-size: 12px; }
+      .role-table th, .role-table td { padding: 6px 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div>
+    <div class="logo">💡 Lighting Survey</div>
+    <div class="sub">Hướng dẫn sử dụng</div>
+  </div>
+  <a href="index.html">← Mở ứng dụng</a>
+</nav>
+
+<div class="container">
+
+  <!-- MỤC LỤC -->
+  <div class="toc">
+    <h2>📋 Mục lục</h2>
+    <ol>
+      <li><a href="#s1">Giới thiệu</a></li>
+      <li><a href="#s2">Đăng nhập &amp; Phân quyền</a></li>
+      <li><a href="#s3">Giao diện bản đồ</a></li>
+      <li><a href="#s4">Thêm marker mới</a></li>
+      <li><a href="#s5">Xem và chỉnh sửa marker</a></li>
+      <li><a href="#s6">Tìm kiếm &amp; Bộ lọc</a></li>
+      <li><a href="#s7">Sơ đồ cáp &amp; Vẽ cáp</a></li>
+      <li><a href="#s8">In bản vẽ kỹ thuật</a></li>
+      <li><a href="#s9">Xem phố (Mapillary)</a></li>
+      <li><a href="#s10">Loại marker</a></li>
+      <li><a href="#s11">Xuất báo cáo Excel</a></li>
+      <li><a href="#s12">Xuất CAD (DXF)</a></li>
+      <li><a href="#s13">Đồng bộ GitHub</a></li>
+      <li><a href="#s14">Cài app trên điện thoại / máy tính</a></li>
+      <li><a href="#s15">Cấu hình GPS (Phone &amp; RTK Tersus Luka)</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. GIỚI THIỆU -->
+  <section id="s1">
+    <h2><span class="num">1</span> Giới thiệu</h2>
+    <p>
+      <strong>Lighting Survey</strong> là ứng dụng web bản đồ dùng để khảo sát và quản lý hệ thống chiếu sáng công cộng.
+      Hoạt động trực tiếp trên trình duyệt, không cần cài đặt, có thể dùng offline sau lần tải đầu tiên, và cài như app native (PWA) trên điện thoại lẫn máy tính.
+    </p>
+    <div class="note note-info">
+      <span class="note-icon">ℹ️</span>
+      <div>Dữ liệu đồng bộ hai chiều: ghi realtime vào <strong>Google Sheets</strong> qua Apps Script và lưu snapshot Excel trên <strong>GitHub</strong>. Hỗ trợ đa địa bàn (14 quận/huyện/xã) với sheet riêng cho từng nơi.</div>
+    </div>
+
+    <h3>🚀 Tính năng nổi bật</h3>
+
+    <h4 style="margin-top:14px;color:#1e40af;">🗺 Bản đồ &amp; Marker</h4>
+    <ul>
+      <li><strong>4 lớp bản đồ nền</strong>: Google Maps (default), OpenStreetMap, Vệ tinh Google, Vệ tinh + tên đường</li>
+      <li><strong>6 loại đối tượng</strong>: Trụ STK / Trụ trang trí / Trụ HTLT / Trụ TTLT / Tủ chiếu sáng nổi / Tủ chiếu sáng ngầm</li>
+      <li><strong>Icon động</strong>: hình dáng đổi theo số lượng bóng đèn (1-4 bóng), badge công suất + loại đèn (vd <code>2L100</code> = 2 bóng LED 100W)</li>
+      <li><strong>Cluster thông minh</strong>: gộp marker khi zoom &lt; 15, hiện riêng lẻ khi zoom ≥ 15, hiện nhãn tên khi zoom ≥ 17</li>
+      <li><strong>Xoay bản đồ</strong>: la bàn tương tác + phím tắt <kbd>[</kbd> / <kbd>]</kbd> ± 5°, xoay 2 ngón touch</li>
+      <li><strong>Widget tỷ lệ</strong>: chọn nhanh 1:200 → 1:25000 (chuẩn A3) để map zoom đến mức tương ứng</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">📡 Định vị GPS — hỗ trợ RTK Tersus Luka</h4>
+    <ul>
+      <li><strong>2 chế độ</strong>: Phone GPS (±3-10m, mặc định) hoặc RTK qua mock location (±1-2cm khi FIXED)</li>
+      <li><strong>Tracking bar realtime</strong>: accuracy + sample counter + auto-accept countdown 3s</li>
+      <li><strong>Status badge RTK</strong>: 🟢 FIXED / 🟡 FLOAT / 🔵 DGPS / ⚪ SPS</li>
+      <li><strong>Multi-sample averaging</strong> (MAD outlier filter) khi dùng phone GPS — sai số giảm ~√8 ≈ 2.83 lần</li>
+      <li><strong>Precision tự động</strong>: phone lưu tọa độ 6 chữ số, RTK lưu 8 chữ số (mm-level)</li>
+      <li><strong>Auto-detect</strong>: cảnh báo khi chọn RTK nhưng chưa setup mock location</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">📝 Quản lý đối tượng — 25 cột data</h4>
+    <ul>
+      <li>Tên trụ, tủ điều khiển, loại trụ/cần/đèn, công suất, mã PE, đường, phường/xã</li>
+      <li>Ảnh chụp tự động upload GitHub, hỗ trợ lazy load</li>
+      <li>Marker gốc (cùng basename / cùng tủ), khoảng cách cáp (auto tính Haversine)</li>
+      <li><strong>Loại cáp</strong> (nổi/ngầm) — vẽ với màu &amp; kiểu nét khác nhau</li>
+      <li>Reverse geocoding tự động điền Đường + Phường/Xã (OpenStreetMap)</li>
+      <li>VN2000-X/Y tự tính từ Lat/Lon (Gauss-Krüger, ellipsoid GRS80)</li>
+      <li>Độ chính xác + chế độ GPS lưu để audit về sau</li>
+      <li>Cho phép kéo marker để chỉnh vị trí (toggle "Bật chỉnh vị trí")</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">🔌 Sơ đồ cáp</h4>
+    <ul>
+      <li>Vẽ tự động đường cáp từ trường <strong>Marker gốc</strong> + nhãn khoảng cách</li>
+      <li><strong>2 loại cáp</strong>: nổi (xanh dash <code>10 4</code>) và ngầm (đỏ dash <code>2 3 8 3</code>)</li>
+      <li>Multi-select tủ điều khiển để vẽ riêng tuyến</li>
+      <li>Chế độ sửa cáp trực tiếp trên bản đồ (xóa đoạn / đổi điểm gốc)</li>
+      <li>Phát hiện vòng lặp cáp tự động — hiện chain trụ bị lỗi</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">🖨 In bản vẽ kỹ thuật PDF</h4>
+    <ul>
+      <li>Xuất PDF A3 hoặc A4 ngang theo chuẩn bản vẽ kỹ thuật (tiêu đề, bảng ký hiệu, khung tên)</li>
+      <li><strong>Tỷ lệ chính xác</strong> (1:500 → 1:25000) — đo bằng thước trên PDF khớp tỷ lệ chọn</li>
+      <li>Fractional zoom + math chuẩn (H_screen + mmH)</li>
+      <li>Bảng ký hiệu 3 cột (Ký hiệu | Số lượng | Đơn vị) — icon kích thước thật, đếm chính xác</li>
+      <li>Auto-fit chiều cao footer theo số loại marker, fallback compact khi nhiều loại</li>
+      <li>Auto-fill tên bản vẽ từ filter tủ điều khiển</li>
+      <li>Xem trước trước khi xuất, xoay map tùy chỉnh</li>
+      <li>Persist toàn bộ field form qua localStorage (trừ ngày)</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">🔍 Tìm kiếm &amp; Lọc</h4>
+    <ul>
+      <li><strong>Tìm trụ</strong>: theo tên / ID / tọa độ <code>lat,lon</code> — match không dấu, không phân biệt hoa thường, bỏ qua khoảng trắng &amp; ký tự đặc biệt (vd gõ <code>duong tran hung dao</code> match <code>Đường Trần Hưng Đạo</code>)</li>
+      <li><strong>Filter overlay</strong>: lọc theo Loại marker, Người KS, Phường/Xã, Đường, Tủ điều khiển (multi-select có search)</li>
+      <li><strong>Bộ lọc apply tự động</strong> vào Sơ đồ cáp, In bản vẽ, Xuất báo cáo</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">🌍 Đa địa bàn — 14 sheet</h4>
+    <ul>
+      <li><strong>TP HCM</strong> (10): Q1, Q3, Q5, Q8, Q10, Q11, Phú Nhuận, Bình Thạnh, Tân Bình, Tân Phú</li>
+      <li><strong>Bình Dương</strong> (3): Xã Bàu Bàng, Xã Trừ Văn Thố, Phường Bến Cát</li>
+      <li><strong>Long An</strong> (1): Cần Giuộc (file Google Sheet riêng — qua <code>EXTERNAL_SPREADSHEET_IDS</code>)</li>
+      <li>ID tự sinh theo prefix địa bàn (TQ/Q1/Q3/.../CG)</li>
+      <li>Phân vùng theo tài khoản (cột <code>vung</code> trong sheet TaiKhoan) — user chỉ thấy địa bàn được phép</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">☁ Đồng bộ &amp; Export</h4>
+    <ul>
+      <li><strong>Google Sheets realtime</strong> — mỗi thao tác (thêm/sửa/xóa/move) ghi ngay qua GAS Web App</li>
+      <li><strong>Batch sync</strong> cho marker đã kéo — nút "Cập nhật" đẩy hàng loạt khi nhiều marker thay đổi vị trí</li>
+      <li><strong>GitHub Excel</strong> — bấm 1 nút để snapshot toàn bộ data thành <code>data/khaosat_&lt;sheet&gt;.xlsx</code>, push lên repo</li>
+      <li><strong>Version auto-bump</strong> mỗi commit push (GitHub Action) — hiển thị trên tab title</li>
+      <li><strong>Excel báo cáo</strong>: 2 sheet (Chi tiết + Tổng hợp theo loại), lọc theo ngày/phường/loại</li>
+      <li><strong>DXF CAD</strong>: tọa độ VN-2000 múi 3°, mở được AutoCAD / QGIS / BricsCAD</li>
+      <li><strong>Log lịch sử</strong>: ghi mọi thao tác (delete/edit/move) vào sheet <code>LichSu</code> — chỉ admin xem được</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">👥 Phân quyền 4 vai trò</h4>
+    <ul>
+      <li><strong>admin</strong>: đầy đủ + xem lịch sử thao tác</li>
+      <li><strong>user</strong>: thêm/sửa/xóa + GitHub sync</li>
+      <li><strong>user1</strong>: thêm/sửa, không được xóa</li>
+      <li><strong>demo</strong>: chỉ xem bản đồ</li>
+      <li>Đổi tên đăng nhập / mật khẩu trực tiếp trong app (nút 🔑)</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">📱 PWA + Tối ưu mobile</h4>
+    <ul>
+      <li>Cài như app native trên Android, iOS, Windows, macOS</li>
+      <li>Service Worker cache offline (HTML network-first, map tiles + CDN libs cache-first ≤300 tile)</li>
+      <li>Icon mobile tối giản, shared icons khi không có badge (giảm DOM node ~80%)</li>
+      <li>Cluster aggressive hơn trên mobile, label chỉ hiện zoom ≥ 18</li>
+      <li>Tắt animation Leaflet trên mobile để mượt hơn</li>
+      <li>Lazy load ảnh trong popup, CSS media query ẩn nút ít dùng</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">⚡ Tối ưu hiệu năng</h4>
+    <ul>
+      <li><strong>IndexedDB cache CSV</strong> (stale-while-revalidate) — load lần 2 &lt; 0.3s</li>
+      <li><strong>Chunked marker insertion</strong> + progress bar — không freeze UI khi load 1000+ marker</li>
+      <li><strong>Lazy popup content</strong> — chỉ sinh HTML khi user click marker (tiết kiệm 1000+ lần gọi)</li>
+      <li><strong>Zoom-tier progressive</strong> — zoom &lt; 12 chỉ render tủ điều khiển (50-200 marker thay 14000+)</li>
+      <li><strong>Lazy load CDN libs</strong>: ExcelJS, jsPDF, html2canvas — chỉ tải khi cần</li>
+    </ul>
+
+    <h4 style="margin-top:14px;color:#1e40af;">🛣 Bonus tools</h4>
+    <ul>
+      <li><strong>Chỉ đường xe máy</strong> tới marker (OSRM)</li>
+      <li><strong>Mapillary Street View</strong> — xem ảnh đường phố tại vị trí marker</li>
+      <li><strong>Lightbox ảnh</strong>: click ảnh marker để xem full</li>
+      <li><strong>Reverse geocoding</strong> tiếng Việt (Nominatim OSM)</li>
+    </ul>
+
+    <h3 style="margin-top:18px;">Yêu cầu hệ thống</h3>
+    <ul>
+      <li>Trình duyệt Chrome / Edge / Safari (phiên bản mới nhất) — Chrome khuyến nghị cho mobile</li>
+      <li>Kết nối Internet cho lần load đầu + sync data (sau đó dùng offline được phần lớn)</li>
+      <li>Tài khoản được cấp bởi quản trị viên (sheet <code>TaiKhoan</code>)</li>
+      <li>Phone Android có GPS + Location (nếu dùng tính năng định vị)</li>
+      <li><em>Tùy chọn</em>: máy RTK Tersus Luka + Nuwa app + NTRIP correction (cho độ chính xác cm)</li>
+    </ul>
+  </section>
+
+  <!-- 2. ĐĂNG NHẬP & PHÂN QUYỀN -->
+  <section id="s2">
+    <h2><span class="num">2</span> Đăng nhập &amp; Phân quyền</h2>
+
+    <h3>Đăng nhập</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc"><strong>Nhập tên đăng nhập và mật khẩu</strong>
+          Do quản trị viên cấp. Tên đăng nhập không phân biệt chữ hoa/thường.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc"><strong>Nhấn "Đăng nhập"</strong>
+          Máy chủ có thể mất 10–20 giây lần đầu (cold start). Nếu quá lâu, nút <strong>"Hủy"</strong> xuất hiện để thử lại.</div>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="sc"><strong>Sau đăng nhập</strong>
+          Bản đồ tải tự động. Tên người dùng hiển thị ở góc phải trên cùng. Nhấn vào thẻ tên để đăng xuất.</div>
+      </div>
+    </div>
+
+    <h3>Đổi tên đăng nhập / mật khẩu</h3>
+    <p>Nhấn <kbd>☰</kbd> → nhấn biểu tượng <kbd>🔑</kbd> bên cạnh tên người dùng → nhập mật khẩu hiện tại và thông tin mới → nhấn <strong>Lưu thay đổi</strong>.</p>
+    <div class="note note-warn">
+      <span class="note-icon">⚠️</span>
+      <div>Sau khi đổi tên đăng nhập, phiên hiện tại sẽ kết thúc và yêu cầu đăng nhập lại bằng tên mới.</div>
+    </div>
+
+    <h3>Vai trò &amp; Quyền truy cập</h3>
+    <table class="role-table">
+      <tr>
+        <th>Vai trò</th><th>Xem bản đồ</th><th>Thêm / Sửa</th><th>Xóa</th><th>Kéo marker</th><th>GitHub sync</th><th>Camera / Đèn tắt</th>
+      </tr>
+      <tr><td><span class="badge badge-red">admin</span></td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td><span class="badge badge-blue">user</span></td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td></tr>
+      <tr><td><span class="badge badge-green">user1</span></td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td></tr>
+      <tr><td><span class="badge badge-gray">demo</span></td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+    </table>
+
+    <h3>Phân vùng địa bàn</h3>
+    <p>Mỗi tài khoản có thể được giới hạn chỉ xem một số địa bàn nhất định (cột <strong>Vùng</strong> trong sheet TaiKhoan). Tài khoản <em>không có vùng</em> được truy cập tất cả địa bàn.</p>
+    <div class="note note-info">
+      <span class="note-icon">🗺️</span>
+      <div>Danh sách địa bàn trong dropdown "Chọn trang" chỉ hiển thị những vùng tài khoản được phép. Truy cập vùng không được phép sẽ bị từ chối.</div>
+    </div>
+  </section>
+
+  <!-- 3. GIAO DIỆN -->
+  <section id="s3">
+    <h2><span class="num">3</span> Giao diện bản đồ</h2>
+
+    <h3>Thanh trên (Top Bar)</h3>
+    <ul>
+      <li><kbd>☰</kbd> — Mở bảng điều khiển (tài khoản, đồng bộ, GitHub, xuất dữ liệu...)</li>
+      <li>Ô tìm kiếm — Tìm theo tên trụ, ID hoặc tọa độ</li>
+      <li>Nhãn phiên bản dữ liệu — Hiện version file đang xem (VD: <code>Dữ liệu v1.0.42</code>)</li>
+    </ul>
+
+    <h3>Bảng điều khiển (☰)</h3>
+    <ul>
+      <li><strong>Thẻ tài khoản</strong> — Tên user + vai trò; nhấn để đăng xuất. Nút <kbd>🔑</kbd> đổi thông tin đăng nhập.</li>
+      <li><strong>Điều hướng</strong> — Dropdown "Chọn trang" chuyển giữa các địa bàn (quận/huyện/xã), lịch sử thao tác (admin), hướng dẫn. Các trang quản lý camera và đèn tắt/sự cố chỉ hiện với tài khoản admin.</li>
+      <li><strong>Chỉnh vị trí &amp; Đồng bộ</strong> — Bật/tắt kéo marker; nút Cập nhật đẩy vị trí lên Sheet.</li>
+      <li><strong>Sơ đồ cáp</strong> — Hiển thị đường cáp nối các trụ; thêm nút <strong>Sửa cáp</strong> và <strong>Vẽ cáp</strong>.</li>
+      <li><strong>In bản vẽ</strong> — Xuất PDF bản vẽ kỹ thuật theo bộ lọc hiện tại.</li>
+      <li><strong>GitHub / Xuất dữ liệu</strong> — Lưu Excel, đồng bộ GitHub, xuất báo cáo, xuất DXF.</li>
+    </ul>
+
+    <h3>Chuyển địa bàn</h3>
+    <p>Dropdown <strong>"Chọn trang"</strong> trong bảng điều khiển liệt kê tất cả địa bàn được phép. Chọn một địa bàn → bản đồ xóa marker cũ và tải dữ liệu mới của địa bàn đó.</p>
+    <div class="note note-info">
+      <span class="note-icon">💾</span>
+      <div>Dữ liệu mỗi địa bàn được cache trên trình duyệt (IndexedDB). Lần tải thứ hai gần như tức thì; nền app tự kiểm tra cập nhật mới.</div>
+    </div>
+
+    <h3>Thanh dưới (Bottom Bar)</h3>
+    <ul>
+      <li><strong>Vị trí</strong> — Căn giữa bản đồ về GPS hiện tại</li>
+      <li><strong>+ Thêm marker</strong> — Bắt đầu thêm trụ/tủ mới</li>
+      <li><strong>Lọc</strong> — Mở bộ lọc marker trên bản đồ</li>
+      <li><strong>Lưu</strong> — Tải xuống file Excel</li>
+    </ul>
+
+    <h3>Bản đồ</h3>
+    <ul>
+      <li>Lớp nền mặc định: <strong>Google Maps</strong>. Nút chuyển lớp (giữa bên phải) cho phép chuyển sang OpenStreetMap, Vệ tinh...</li>
+      <li>Zoom &lt; 15: marker gộp cluster; Zoom ≥ 15: icon riêng lẻ; Zoom ≥ 17: nhãn tên trụ</li>
+    </ul>
+
+    <h3>Cụm điều khiển bản đồ (giữa bên phải)</h3>
+    <ul>
+      <li><strong>+/−</strong> — Phóng to / thu nhỏ map</li>
+      <li><strong>Hộp Z</strong> — Hiển thị mức zoom hiện tại</li>
+      <li><strong>La bàn</strong> — Xoay map (click vào kim chỉ để reset về hướng Bắc; nút ↺↻ xoay ±5°; phím tắt <kbd>[</kbd> / <kbd>]</kbd>)</li>
+      <li><strong>Tỷ lệ (A3)</strong> — Dropdown chọn tỷ lệ in (1:200 → 1:25000) → map zoom tự động đến mức tương ứng cho khổ A3</li>
+      <li><strong>Layer switcher</strong> — Đổi nền: Google Maps / OSM / Vệ tinh / Vệ tinh + tên đường</li>
+    </ul>
+  </section>
+
+  <!-- 4. THÊM MARKER -->
+  <section id="s4">
+    <h2><span class="num">4</span> Thêm marker mới</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc"><strong>Nhấn "+ Thêm marker"</strong>
+          Nút chuyển đỏ, con trỏ thay đổi — ứng dụng chờ chọn vị trí.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc"><strong>Chọn vị trí</strong>
+          • Nhấn vào bản đồ tại vị trí cần đặt<br>
+          • Hoặc nhấn <kbd>Vị trí hiện tại</kbd> để dùng GPS<br>
+          • Hoặc nhấn <kbd>Chọn trên bản đồ</kbd> để kéo ghim</div>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="sc"><strong>Điền thông tin trong form</strong> — xem bảng các trường bên dưới.</div>
+      </div>
+      <div class="step">
+        <div class="sn">4</div>
+        <div class="sc"><strong>Chụp / chọn ảnh (tùy chọn)</strong>
+          Nhấn nút camera để chụp ảnh hiện trường. Ảnh upload lên GitHub.</div>
+      </div>
+      <div class="step">
+        <div class="sn">5</div>
+        <div class="sc"><strong>Nhấn "Lưu marker"</strong>
+          Dữ liệu ghi vào Google Sheets ngay qua Apps Script.</div>
+      </div>
+    </div>
+
+    <h3>Các trường thông tin</h3>
+    <ul>
+      <li><strong>Tên trụ</strong> — Tên định danh (bắt buộc)</li>
+      <li><strong>Tủ điều khiển</strong> — Tên tủ điện quản lý trụ này</li>
+      <li><strong>Cáp trụ/tủ gốc</strong> — Trụ hoặc tủ đầu chuỗi cáp. Dropdown gợi ý 3 nhóm: <em>[tủ]</em> (tủ điều khiển đã nhập), trụ <em>cùng basename</em>, trụ <em>[cùng tủ]</em> (khác tên nhưng cùng tủ điều khiển). Chọn xong tự tính khoảng cách Haversine.</li>
+      <li><strong>Khoảng cách (m)</strong> — Tự động tính khi chọn trụ gốc; hoặc nhập tay</li>
+      <li><strong>Loại trụ / Loại cần / Loại đèn</strong> — Chọn từ danh sách</li>
+      <li><strong>Số lượng đèn</strong> — Số bóng đèn trên 1 trụ (1–4); ảnh hưởng đến hình dạng icon</li>
+      <li><strong>Công suất</strong> — VD: 100W, 150W</li>
+      <li><strong>Mã PE</strong> — Mã thiết bị PE</li>
+      <li><strong>Đường / Phường Xã</strong> — Tự động tra từ tọa độ (OpenStreetMap Nominatim)</li>
+      <li><strong>Ghi chú</strong> — Ghi chú bổ sung (tùy chọn)</li>
+    </ul>
+    <div class="note note-info">
+      <span class="note-icon">📐</span>
+      <div>Tọa độ <strong>VN2000-X/Y</strong> tự động tính từ lat/lon khi lưu (Gauss-Krüger, múi 6°, GRS80). Không cần nhập tay.</div>
+    </div>
+  </section>
+
+  <!-- 5. XEM / CHỈNH SỬA -->
+  <section id="s5">
+    <h2><span class="num">5</span> Xem và chỉnh sửa marker</h2>
+    <p>Nhấn vào icon bất kỳ trụ nào trên bản đồ để mở popup thông tin.</p>
+
+    <h3>Popup hiển thị</h3>
+    <ul>
+      <li>Tên, ID, loại, tủ điều khiển, loại trụ/cần/đèn, số lượng đèn, công suất, mã PE</li>
+      <li>Đường, phường/xã; tọa độ GPS; thời gian cập nhật; người khảo sát</li>
+      <li>Ảnh hiện trường (nếu có)</li>
+      <li>Khoảng cách đến marker gốc và từng đoạn trong chuỗi</li>
+    </ul>
+
+    <h3>Các nút hành động trong popup</h3>
+    <ul>
+      <li><strong>🧭 Đi đến</strong> — Chỉ đường xe máy từ vị trí hiện tại (OSRM)</li>
+      <li><strong>✏️ Sửa</strong> — Mở form chỉnh sửa (cần quyền canEdit)</li>
+      <li><strong>🗑 Xóa</strong> — Xóa marker (cần quyền canDelete)</li>
+      <li><strong>🌐 Phố</strong> — Xem ảnh đường phố Mapillary tại tọa độ marker (xem mục 9)</li>
+    </ul>
+
+    <h3>Chỉnh sửa marker</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc"><strong>Nhấn "✏️ Sửa"</strong> — Form mở với toàn bộ thông tin hiện tại.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc"><strong>Sửa trường cần thiết</strong> — Khi đổi tên trụ, app tự nhận biết và cập nhật đúng hàng trên Sheet (không tạo hàng mới).</div>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="sc"><strong>Nhấn "Lưu marker"</strong> — Dữ liệu cập nhật ngay. Ảnh cũ giữ nguyên nếu không upload ảnh mới.</div>
+      </div>
+    </div>
+
+    <h3>Di chuyển vị trí marker (kéo)</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc"><strong>Mở bảng điều khiển</strong> <kbd>☰</kbd> → mục <strong>Chỉnh vị trí &amp; Đồng bộ</strong> → nhấn <strong>"Bật chỉnh vị trí"</strong>.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc"><strong>Kéo marker</strong> đến vị trí mới — badge số bên cạnh nút Cập nhật tăng lên.</div>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="sc"><strong>Nhấn "Cập nhật"</strong> — Đẩy tất cả marker đã kéo lên Google Sheet, hiện tiến độ "Đang cập nhật i/N…"</div>
+      </div>
+      <div class="step">
+        <div class="sn">4</div>
+        <div class="sc"><strong>Tắt chỉnh vị trí</strong> sau khi xong để tránh kéo nhầm.</div>
+      </div>
+    </div>
+    <div class="note note-warn">
+      <span class="note-icon">🔒</span>
+      <div>Chỉ tài khoản admin / user / user1 mới kéo được marker. Tài khoản <code>demo</code> không thể kéo.</div>
+    </div>
+  </section>
+
+  <!-- 6. TÌM KIẾM & BỘ LỌC -->
+  <section id="s6">
+    <h2><span class="num">6</span> Tìm kiếm &amp; Bộ lọc</h2>
+
+    <h3>Tìm kiếm nhanh</h3>
+    <p>Nhập từ khóa vào ô tìm kiếm trên thanh trên, nhấn <kbd>Enter</kbd> hoặc nút <strong>Tìm</strong>.</p>
+    <ul>
+      <li><strong>Tên trụ</strong> — khớp một phần, không phân biệt dấu</li>
+      <li><strong>ID</strong> — tìm chính xác hoặc một phần</li>
+      <li><strong>Tọa độ</strong> — nhập dạng <code>lat,lon</code> (VD: <code>10.776, 106.700</code>) để zoom đến vị trí</li>
+    </ul>
+
+    <h3>Bộ lọc marker</h3>
+    <p>Nhấn nút <strong>Lọc</strong> ở thanh dưới để mở bộ lọc. Áp dụng bộ lọc ảnh hưởng đến:</p>
+    <ul>
+      <li>Marker hiển thị trên bản đồ</li>
+      <li>Sơ đồ cáp (vẽ theo dữ liệu đã lọc)</li>
+      <li>In bản vẽ PDF (chỉ in dữ liệu đã lọc)</li>
+      <li>Xuất báo cáo Excel</li>
+    </ul>
+
+    <h3>Các tiêu chí lọc</h3>
+    <ul>
+      <li><strong>Loại marker</strong> — checkbox từng loại (trụ STK, trang trí, HTLT, TTLT, tủ nổi, tủ ngầm)</li>
+      <li><strong>Người khảo sát</strong> — nhập tên (khớp một phần, không phân biệt dấu)</li>
+      <li><strong>Phường / Xã</strong> — nhập tên phường/xã</li>
+      <li><strong>Đường</strong> — nhập tên đường</li>
+      <li><strong>Tủ điều khiển</strong> — ô tìm kiếm tủ + listbox chọn nhiều (<kbd>Ctrl</kbd> / <kbd>⌘</kbd> + click để chọn nhiều tủ)</li>
+    </ul>
+    <div class="note note-info">
+      <span class="note-icon">💡</span>
+      <div>Tìm kiếm trong bộ lọc <strong>không phân biệt dấu và chữ hoa/thường</strong>. Gõ "quan 1" cũng khớp "Quận 1".</div>
+    </div>
+
+    <div class="note note-success">
+      <span class="note-icon">✅</span>
+      <div>Sau khi áp dụng bộ lọc, <strong>Sơ đồ cáp</strong> và <strong>In bản vẽ</strong> tự động dùng đúng dữ liệu đã lọc — không cần chọn lại.</div>
+    </div>
+  </section>
+
+  <!-- 7. SƠ ĐỒ CÁP -->
+  <section id="s7">
+    <h2><span class="num">7</span> Sơ đồ cáp &amp; Vẽ cáp</h2>
+
+    <h3>Hiển thị sơ đồ cáp</h3>
+    <p>Nhấn <kbd>☰</kbd> → <strong>Sơ đồ cáp</strong> để bật/tắt lớp đường cáp trên bản đồ.</p>
+    <ul>
+      <li>Cáp vẽ theo dữ liệu <strong>bộ lọc hiện tại</strong> (không cần chọn tủ riêng)</li>
+      <li>Mỗi đoạn cáp là đường nét đứt xanh đậm nối từ trụ con → trụ/tủ gốc</li>
+      <li>Nhãn khoảng cách (m) hiển thị tại điểm giữa đoạn cáp</li>
+    </ul>
+    <div class="note note-info">
+      <span class="note-icon">🔌</span>
+      <div>Dữ liệu cáp lấy từ cột <strong>"Marker gốc"</strong> và <strong>"Khoảng cách (m)"</strong> của mỗi trụ. Trụ có Marker gốc = tên tủ/trụ cha sẽ được nối bằng đường cáp.</div>
+    </div>
+
+    <h3>Sửa cáp hiện có</h3>
+    <p>Khi sơ đồ cáp đang bật, nhấn <strong>"Sửa cáp"</strong> → click vào đường cáp trên bản đồ → popup hiện 2 tùy chọn:</p>
+    <ul>
+      <li><strong>🗑 Xóa đoạn này</strong> — xóa liên kết cáp, đồng bộ GAS ngay</li>
+      <li><strong>↩ Đổi điểm gốc</strong> — click vào trụ/tủ khác để thay điểm nguồn; khoảng cách tự tính lại</li>
+    </ul>
+
+    <h3>Vẽ cáp mới trực tiếp trên bản đồ</h3>
+    <p>Khi sơ đồ cáp đang bật, nhấn <strong>"Vẽ cáp"</strong> để vào chế độ vẽ:</p>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc"><strong>Nhấn "Vẽ cáp"</strong> — nút đổi thành "Hủy vẽ", thanh trạng thái hướng dẫn xuất hiện.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc"><strong>Click vào trụ CON</strong> (trụ nhận cáp) — popup hiện nút
+          <span style="background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:700;border:1px dashed #2563eb;">📍 Chọn làm trụ CON</span>.
+          Nhấn nút đó.</div>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="sc"><strong>Click vào trụ/tủ GỐC</strong> (điểm nguồn cáp) — popup hiện nút
+          <span style="background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:700;border:1px dashed #15803d;">🔗 Nối cáp: [con] → [gốc]</span>.
+          Nhấn nút đó.</div>
+      </div>
+      <div class="step">
+        <div class="sn">4</div>
+        <div class="sc"><strong>Cáp được tạo tự động</strong> — trường "Marker gốc" và "Khoảng cách" của trụ con được cập nhật, đồng bộ Google Sheets ngay, sơ đồ cáp vẽ lại.</div>
+      </div>
+      <div class="step">
+        <div class="sn">5</div>
+        <div class="sc"><strong>Tiếp tục vẽ cáp khác</strong> hoặc nhấn "Hủy vẽ" / tắt sơ đồ cáp để thoát.</div>
+      </div>
+    </div>
+    <div class="note note-success">
+      <span class="note-icon">📏</span>
+      <div>Khoảng cách cáp được tính tự động bằng công thức <strong>Haversine</strong> từ tọa độ hai điểm — không cần nhập tay.</div>
+    </div>
+    <div class="note note-warn">
+      <span class="note-icon">⚠️</span>
+      <div>Chỉ tài khoản có quyền chỉnh sửa mới thấy nút "Vẽ cáp" và "Sửa cáp".</div>
+    </div>
+  </section>
+
+  <!-- 8. IN BẢN VẼ -->
+  <section id="s8">
+    <h2><span class="num">8</span> In bản vẽ kỹ thuật</h2>
+    <p>Nhấn <kbd>☰</kbd> → <strong>In bản vẽ</strong> để xuất PDF bản vẽ sơ đồ tuyến trạm đèn.</p>
+
+    <h3>Dữ liệu in</h3>
+    <p>Bản vẽ dùng <strong>bộ lọc hiện tại</strong> trên bản đồ — không có dropdown chọn tủ riêng. Áp dụng bộ lọc đúng trước khi mở modal in.</p>
+
+    <h3>Các trường trong modal</h3>
+    <ul>
+      <li><strong>Tỉ lệ</strong> — 1:500, 1:1000, 1:2000... Bản đồ zoom đúng theo tỉ lệ (có hỗ trợ fractional zoom). Đo bằng thước trên PDF in ra phải khớp với tỷ lệ chọn.</li>
+      <li><strong>Khổ giấy</strong> — A3 hoặc A4 ngang</li>
+      <li><strong>Tên bản vẽ</strong> — Hiển thị trong khung tên (title block). Nếu trống → fallback sang tên tủ đang lọc → mặc định "Sơ đồ tuyến"</li>
+      <li><strong>Số bản vẽ</strong></li>
+      <li><strong>Người lập / Ngày</strong> (ngày luôn lấy hôm nay)</li>
+      <li><strong>Chuyên viên phụ trách ĐB</strong> và <strong>CS khu vực</strong></li>
+      <li><strong>Tự nhớ</strong>: tất cả field (trừ Ngày) lưu localStorage — mở modal lần sau tự fill lại</li>
+    </ul>
+
+    <h3>Xem trước bản vẽ</h3>
+    <p>Nhấn <strong>"Xem trước"</strong> — bản đồ chuyển sang chế độ in với khung viền, legend, cáp nét đứt và khung tên. Thanh nổi xuất hiện với 2 nút: <strong>Xuất PDF</strong> và <strong>Đóng xem trước</strong>.</p>
+
+    <h3>Xuất PDF</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc">Điền thông tin modal → nhấn <strong>"Xuất PDF"</strong> (hoặc từ thanh xem trước).</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc">App chuyển sang bản đồ CartoDB (có CORS), zoom đúng theo tỉ lệ + khổ giấy, đợi tile load xong (event-based, ≤5s).</div>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="sc">Capture toàn bộ khung bản vẽ → tạo PDF A3/A4 → tải xuống tự động.</div>
+      </div>
+    </div>
+
+    <h3>Kiểm tra tỷ lệ in</h3>
+    <div class="note note-info">
+      <span class="note-icon">📐</span>
+      <div>Để verify tỷ lệ: in PDF ra giấy (Print actual size — KHÔNG fit-to-page) → dùng thước đo: <strong>1 cm trên giấy = scale × 1 cm trên thực địa</strong>.<br>
+      Ví dụ 1:1000 → 1 cm trên giấy = 10 m trên thực địa. Hoặc đo giữa 2 trụ trong PDF rồi so với khoảng cách Haversine thực.</div>
+    </div>
+
+    <h3>Bố cục bản vẽ</h3>
+    <ul>
+      <li><strong>Tiêu đề</strong> — Tên bản vẽ + tủ điều khiển + tỉ lệ (top header)</li>
+      <li><strong>Bản đồ + cáp</strong> — Vùng giữa, marker icon + đường cáp nét đứt + nhãn khoảng cách</li>
+      <li><strong>Footer bottom-left (37.5%)</strong> — Bảng 3 cột: Bảng ký hiệu | Số lượng | Đơn vị. Mỗi loại marker 1 hàng (icon kích thước thật + tên + count + đơn vị "trụ"/"tủ"), hàng cuối là "Cáp nguồn" (m).</li>
+      <li><strong>Khung tên (title block bottom-right 62.5%)</strong> — 4 hàng: tên tổ chức + ô ký tên trống + tên người (TT QLGT — Phó GĐ — Người lập — Bản vẽ — SHBV)</li>
+    </ul>
+    <div class="note note-info">
+      <span class="note-icon">🖨</span>
+      <div>Thư viện jsPDF và html2canvas chỉ tải khi cần — không ảnh hưởng tốc độ tải app thông thường.</div>
+    </div>
+  </section>
+
+  <!-- 9. XEM PHỐ MAPILLARY -->
+  <section id="s9">
+    <h2><span class="num">9</span> Xem phố (Mapillary)</h2>
+    <p>Nhấn vào marker → nhấn nút <span style="background:#f0fdf4;color:#16a34a;padding:2px 8px;border-radius:8px;font-size:13px;font-weight:700;">🌐 Phố</span> trong popup để xem ảnh đường phố Mapillary tại tọa độ marker đó.</p>
+
+    <ul>
+      <li>App tìm ảnh gần nhất trong bán kính <strong>50m</strong> quanh vị trí marker</li>
+      <li>Nếu có ảnh: viewer panorama tương tác mở ra (có thể xoay nhìn xung quanh)</li>
+      <li>Nếu không có ảnh: thông báo "Không có ảnh đường phố tại vị trí này"</li>
+    </ul>
+
+    <div class="note note-info">
+      <span class="note-icon">📷</span>
+      <div><strong>Mapillary</strong> là nền tảng ảnh đường phố cộng đồng, miễn phí. Độ phủ tốt tại TP.HCM và các đô thị lớn; có thể thiếu ở khu vực ngoại thành hoặc đường hẻm nhỏ.</div>
+    </div>
+    <div class="note note-warn">
+      <span class="note-icon">⚠️</span>
+      <div>Lần đầu nhấn "🌐 Phố", thư viện Mapillary sẽ được tải (~500KB). Các lần sau trong cùng phiên tải gần như tức thì.</div>
+    </div>
+  </section>
+
+  <!-- 10. LOẠI MARKER -->
+  <section id="s10">
+    <h2><span class="num">10</span> Loại marker</h2>
+    <div class="type-grid">
+      <div class="type-card" style="background:#e0f2fe;border-color:#0ea5e9">
+        <div class="tc-icon">💡</div>
+        <div class="tc-label" style="color:#0369a1">Trụ STK</div>
+        <div class="tc-desc">Icon cột đèn — màu xanh dương</div>
+      </div>
+      <div class="type-card" style="background:#fce7f3;border-color:#ec4899">
+        <div class="tc-icon">🎆</div>
+        <div class="tc-label" style="color:#be185d">Trụ trang trí</div>
+        <div class="tc-desc">Icon cột đèn — màu hồng</div>
+      </div>
+      <div class="type-card" style="background:#d1fae5;border-color:#10b981">
+        <div class="tc-icon">💡</div>
+        <div class="tc-label" style="color:#065f46">Trụ HTLT</div>
+        <div class="tc-desc">Icon cột đèn — màu xanh lá</div>
+      </div>
+      <div class="type-card" style="background:#ffedd5;border-color:#f97316">
+        <div class="tc-icon">💡</div>
+        <div class="tc-label" style="color:#c2410c">Trụ TTLT</div>
+        <div class="tc-desc">Icon cột đèn — màu cam</div>
+      </div>
+      <div class="type-card" style="background:#dbeafe;border-color:#2563eb">
+        <div class="tc-icon">🗄</div>
+        <div class="tc-label" style="color:#1d4ed8">Tủ chiếu sáng nổi</div>
+        <div class="tc-desc">Icon tủ điện — màu xanh đậm</div>
+      </div>
+      <div class="type-card" style="background:#e2e8f0;border-color:#334155">
+        <div class="tc-icon">🗄</div>
+        <div class="tc-label" style="color:#334155">Tủ chiếu sáng ngầm</div>
+        <div class="tc-desc">Icon tủ điện — màu xám đen</div>
+      </div>
+    </div>
+    <div class="note note-info">
+      <span class="note-icon">💡</span>
+      <div>Icon trụ đèn thay đổi hình dạng theo <strong>số lượng đèn</strong> (1–4 bóng). Badge nhỏ bên dưới icon hiện ký hiệu loại đèn và công suất (VD: <code>2L100</code> = 2 bóng LED 100W).</div>
+    </div>
+  </section>
+
+  <!-- 11. XUẤT BÁO CÁO -->
+  <section id="s11">
+    <h2><span class="num">11</span> Xuất báo cáo Excel</h2>
+    <p>Nhấn <kbd>☰</kbd> → <strong>Xuất báo cáo</strong>.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc"><strong>Chọn bộ lọc</strong> — Từ ngày / Đến ngày, Phường/Xã, Loại marker.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc"><strong>Nhấn "Xuất báo cáo"</strong> — File Excel tải xuống ngay.</div>
+      </div>
+    </div>
+    <div class="note note-success">
+      <span class="note-icon">✅</span>
+      <div>File Excel có 2 sheet: <strong>Chi tiết</strong> (toàn bộ các trụ đã lọc) và <strong>Tổng hợp</strong> (số lượng theo từng loại).</div>
+    </div>
+  </section>
+
+  <!-- 12. XUẤT CAD -->
+  <section id="s12">
+    <h2><span class="num">12</span> Xuất CAD (DXF)</h2>
+    <p>Nhấn <kbd>☰</kbd> → <strong>Export to CAD</strong>.</p>
+    <ul>
+      <li><strong>Chọn loại marker</strong> cần xuất (hoặc tất cả)</li>
+      <li><strong>Lọc theo basename</strong> nếu cần xuất một nhóm trụ</li>
+      <li>Nhấn <strong>Xuất DXF</strong> — file tọa độ VN2000 tải về, mở được bằng AutoCAD / QGIS / BricsCAD</li>
+    </ul>
+    <div class="note note-info">
+      <span class="note-icon">📐</span>
+      <div>Hệ tọa độ xuất ra: <strong>VN-2000, Gauss-Krüger múi 6°, ellipsoid GRS80</strong>.</div>
+    </div>
+  </section>
+
+  <!-- 13. ĐỒNG BỘ GITHUB -->
+  <section id="s13">
+    <h2><span class="num">13</span> Đồng bộ GitHub</h2>
+    <p>Nhấn <kbd>☰</kbd> → mục <strong>GitHub</strong> → nhấn nút <strong>GitHub</strong>.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc"><strong>Nhấn "GitHub"</strong> — App tải dữ liệu mới nhất từ Google Sheets, tạo file Excel và upload lên GitHub.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc"><strong>Chờ thông báo</strong> "Đồng bộ thành công: N dòng → GitHub". Version dữ liệu tăng lên tự động.</div>
+      </div>
+    </div>
+    <div class="note note-info">
+      <span class="note-icon">🔑</span>
+      <div>Token GitHub lưu trong Google Apps Script (Script Properties). Người dùng không cần nhập token.</div>
+    </div>
+    <div class="note note-warn">
+      <span class="note-icon">⚠️</span>
+      <div>Thao tác này ghi đè file Excel hiện tại trên GitHub. File xuất theo địa bàn đang chọn: <code>data/khaosat_Quan1.xlsx</code>, <code>data/khaosat.xlsx</code> (Tổng quan)...</div>
+    </div>
+  </section>
+
+  <!-- 14. PWA -->
+  <section id="s14">
+    <h2><span class="num">14</span> Cài app trên điện thoại / máy tính</h2>
+    <p>Ứng dụng hỗ trợ cài đặt như app thật (PWA) trên cả điện thoại lẫn máy tính.</p>
+
+    <h3>Máy tính (Chrome / Edge)</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc">Mở <code>https://neo-era.github.io/lighting-survey/</code> bằng Chrome hoặc Edge.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc">Nhìn vào <strong>thanh địa chỉ</strong> — có icon hình máy tính kèm <kbd>⊕</kbd>. Nhấn vào đó.<br>
+          Nếu không thấy: mở menu <kbd>⋮</kbd> → <strong>Cài đặt Khảo Sát Chiếu Sáng</strong>.</div>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="sc">Nhấn <strong>Cài đặt</strong> → App mở trong cửa sổ riêng, icon xuất hiện trong Start Menu / Desktop.</div>
+      </div>
+    </div>
+
+    <h3>Android (Chrome)</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="sc">Mở trang bằng Chrome → Nhấn menu <kbd>⋮</kbd> → <strong>"Thêm vào màn hình chính"</strong>.</div></div>
+      <div class="step"><div class="sn">2</div><div class="sc">Nhấn <strong>Cài đặt</strong> → App xuất hiện trên màn hình chính.</div></div>
+    </div>
+
+    <h3>iOS (Safari)</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="sc">Mở trang bằng Safari → Nhấn nút <strong>Chia sẻ</strong> (hình vuông + mũi tên lên).</div></div>
+      <div class="step"><div class="sn">2</div><div class="sc">Chọn <strong>"Thêm vào màn hình chính"</strong> → Nhấn <strong>Thêm</strong>.</div></div>
+    </div>
+
+    <div class="note note-success">
+      <span class="note-icon">📱</span>
+      <div>Sau khi cài, app mở toàn màn hình (không có thanh địa chỉ). Bản đồ, thư viện và dữ liệu địa bàn đã cache offline — vẫn xem được khi mất mạng.</div>
+    </div>
+  </section>
+
+  <!-- 15. CẤU HÌNH GPS -->
+  <section id="s15">
+    <h2><span class="num">15</span> Cấu hình GPS (Phone &amp; RTK)</h2>
+    <p>App hỗ trợ 2 chế độ GPS: <strong>📱 Phone GPS</strong> (mặc định, ±3–10m) và <strong>🛰 RTK</strong> (Tersus Luka qua mock location, ±1–5cm khi Fixed). Chọn chế độ tại <kbd>☰</kbd> → <strong>Thiết bị GPS</strong>.</p>
+
+    <div class="note note-info">
+      <span class="note-icon">ℹ️</span>
+      <div>Mỗi chế độ có ngưỡng accuracy + precision tọa độ riêng. Marker đo bằng RTK lưu tọa độ chính xác đến <code>mm</code> (8 chữ số thập phân), marker phone GPS lưu <code>cm</code> (6 chữ số).</div>
+    </div>
+
+    <h3>Quá trình lấy GPS — thanh tiến độ nổi</h3>
+    <p>Khi user bấm <strong>"Thêm marker"</strong> hoặc <strong>"Vị trí hiện tại"</strong>, một thanh nổi xuất hiện sát đáy màn hình hiển thị accuracy realtime:</p>
+    <ul>
+      <li><strong>⏳ Phase tìm tín hiệu</strong> — bar màu vàng/cam, hiển thị accuracy hiện tại + mục tiêu + thời gian đã chờ. Map vẫn pan/zoom được.</li>
+      <li><strong>✓ Phase đạt mục tiêu</strong> — bar đổi xanh, countdown <strong>3 giây auto-accept</strong>. User có thể bấm <strong>"Dùng ngay"</strong> để chấp nhận ngay, hoặc <strong>"Đợi tốt hơn"</strong> để chờ accuracy tốt hơn.</li>
+      <li>Auto-discard nếu user bấm <strong>"Hủy"</strong> hoặc đổi chế độ GPS giữa chừng.</li>
+    </ul>
+
+    <h3>Phần A — Cấu hình Phone GPS (mặc định)</h3>
+    <p>Tối ưu GPS điện thoại để đạt accuracy &lt;5m:</p>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc"><strong>Bật chế độ High Accuracy</strong>:
+          <em>Settings → Location → Mode → "High accuracy"</em> (Android) hoặc <em>Settings → Privacy → Location Services → ON</em> (iOS). Đảm bảo dùng GNSS thật, không chỉ Wi-Fi/Network.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc"><strong>Đứng outdoor, sky view rõ</strong> — Tránh tường, dưới cây dày, gầm cầu. Multipath làm sai số tăng 5-10× trong đô thị dày đặc.</div>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="sc"><strong>Tắt Battery Saver cho browser</strong> — Battery saver throttle GPS, accuracy tệ đi đáng kể. Set Chrome / Safari "No restrictions" trong Battery settings.</div>
+      </div>
+      <div class="step">
+        <div class="sn">4</div>
+        <div class="sc"><strong>Warm-up GPS</strong> — Trước khi khảo sát, mở Google Maps 30 giây để GPS download orbit data (A-GPS). Sau đó mở app khảo sát, fix sẽ nhanh và chính xác hơn.</div>
+      </div>
+      <div class="step">
+        <div class="sn">5</div>
+        <div class="sc"><strong>Đứng yên 5-10s khi lấy GPS</strong> — App tự gom 8 mẫu liên tiếp, loại outlier (Median Absolute Deviation), tính trung bình. Sai số giảm ~√8 ≈ 2.83 lần so với 1 mẫu.</div>
+      </div>
+    </div>
+
+    <h3>Phần B — Setup RTK Tersus Luka qua Mock Location (Android)</h3>
+    <p>Đạt accuracy &lt;5cm (RTK Fixed) — chỉ trên Android, cần app <strong>Nuwa</strong> của Tersus + NTRIP correction.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sc"><strong>Pair Bluetooth</strong>: Bật Luka, long-press power 5s → chuyển sang chế độ pair. Settings → Bluetooth → tìm "Luka_xxx" → kết nối.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sc"><strong>Cài Nuwa</strong>: Tải APK từ <code>tersus-gnss.com</code> (không có trên Play Store). Cài đặt và mở.</div>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="sc"><strong>Connect Luka trong Nuwa</strong>: Device → Connect → chọn Luka đã pair. Hiển thị trạng thái "Connected".</div>
+      </div>
+      <div class="step">
+        <div class="sn">4</div>
+        <div class="sc"><strong>Config NTRIP</strong>: Survey → Settings → CORS/NTRIP. Điền:
+          <ul style="margin-top:6px;">
+            <li><strong>Server</strong>: IP NTRIP caster (VD VINAGEO: <code>caster.vinageoit.com</code>)</li>
+            <li><strong>Port</strong>: <code>2101</code> hoặc <code>8080</code></li>
+            <li><strong>Mountpoint</strong>: VD <code>VRSNT_NRTK</code></li>
+            <li><strong>User / Password</strong>: do nhà cung cấp cấp</li>
+          </ul></div>
+      </div>
+      <div class="step">
+        <div class="sn">5</div>
+        <div class="sc"><strong>Chờ RTK FIXED</strong>: Nuwa hiển thị quality indicator ở góc dưới — <code>SINGLE</code> → <code>DGNSS</code> → <code>FLOAT</code> → <code>FIXED</code>. Cần đạt <strong>FIXED</strong> mới có ±1-2cm. Thời gian: 30s - 2 phút tùy NTRIP và môi trường.</div>
+      </div>
+      <div class="step">
+        <div class="sn">6</div>
+        <div class="sc"><strong>Bật Developer Options trên Android</strong>:
+          <em>Settings → About phone → tap "Build number" 7 lần</em> → quay lại Settings → có mục "Developer options".</div>
+      </div>
+      <div class="step">
+        <div class="sn">7</div>
+        <div class="sc"><strong>Set Nuwa làm Mock Location app</strong>:
+          <em>Settings → Developer options → "Select mock location app"</em> → chọn <strong>Nuwa</strong>.</div>
+      </div>
+      <div class="step">
+        <div class="sn">8</div>
+        <div class="sc"><strong>Trong Nuwa: Output to System Location</strong>:
+          Device → Output → bật <strong>"Output to system location"</strong> (tên có thể là "Mock location output" hoặc "Share with system"). Bắt đầu phát tọa độ RTK ra Android Location Service.</div>
+      </div>
+      <div class="step">
+        <div class="sn">9</div>
+        <div class="sc"><strong>Verify</strong>: Mở Chrome → vào <code>https://www.maptiler.com/whereami/</code> hoặc app khảo sát → accuracy phải hiển thị <strong>≈ 0.02m (2cm)</strong>. Nếu vẫn 3-5m, mock location chưa hoạt động — kiểm tra bước 7-8.</div>
+      </div>
+      <div class="step">
+        <div class="sn">10</div>
+        <div class="sc"><strong>Trong app khảo sát</strong>: <kbd>☰</kbd> → <strong>Thiết bị GPS</strong> → chọn <strong>🛰 RTK</strong>. Từ giờ thanh tracking bar sẽ hiển thị status badge: <code>RTK FIXED</code> / <code>FLOAT</code> / <code>DGPS</code>.</div>
+      </div>
+    </div>
+
+    <div class="note note-warn">
+      <span class="note-icon">⚠️</span>
+      <div>iOS không cho phép mock location qua app bên thứ 3 — chỉ Android. Trên iPhone vẫn dùng được Phone GPS thường.</div>
+    </div>
+
+    <h3>NTRIP — chọn nguồn correction ở Việt Nam</h3>
+    <ul>
+      <li><strong>VINAGEO</strong> (<code>vinageoit.com</code>) — phổ biến nhất với surveyor, phủ TP HCM/Hà Nội/Đà Nẵng. Subscription tháng.</li>
+      <li><strong>VRSNT (Bộ TN&amp;MT)</strong> — toàn quốc nhưng phải xin phép qua Sở TN&amp;MT địa phương.</li>
+      <li><strong>CHC NETSS / Trimble VRS Now</strong> — đi kèm hardware từ dealer.</li>
+      <li><strong>Base station riêng</strong> — cần 1 GNSS receiver thứ 2 làm base, phủ bán kính ~10-15 km. Free sau invest.</li>
+    </ul>
+    <p>Cho khảo sát ở khu vực <strong>HCMC / Bình Dương / Long An</strong>, VINAGEO là lựa chọn phù hợp nhất.</p>
+
+    <h3>Phân biệt RTK Fixed / Float / DGPS / SPS</h3>
+    <ul>
+      <li><strong>🟢 RTK FIXED</strong> (accuracy &lt; 5cm) — Ambiguity đã giải, độ chính xác cm. Mục tiêu khi khảo sát chính xác.</li>
+      <li><strong>🟡 RTK FLOAT</strong> (5-50cm) — Vẫn đang tìm ambiguity, chấp nhận được cho khảo sát thông thường.</li>
+      <li><strong>🔵 DGPS / SBAS</strong> (50cm-5m) — Code differential, chính xác thấp.</li>
+      <li><strong>⚪ SPS</strong> (>5m) — GPS thường, không có correction. Tương đương Phone GPS.</li>
+    </ul>
+
+    <div class="note note-info">
+      <span class="note-icon">📡</span>
+      <div>App tự phân loại status dựa trên giá trị <code>accuracy</code> trả về từ browser. Không cần parse NMEA — workflow mock location ẩn hoàn toàn chi tiết hardware.</div>
+    </div>
+
+    <h3>Lưu trong sheet</h3>
+    <ul>
+      <li>Mỗi marker lưu thêm 2 cột: <strong>Độ chính xác (m)</strong> (giá trị raw, vd <code>0.018</code>) và <strong>Chế độ GPS</strong> (<code>rtk</code> hoặc <code>phone</code>).</li>
+      <li>Sau này có thể filter Excel để biết marker nào đo bằng RTK (vd <code>Độ chính xác &lt; 0.1</code>).</li>
+      <li>Marker cũ chưa có 2 cột này → hiển thị rỗng, không ảnh hưởng chức năng.</li>
+    </ul>
+  </section>
+
+</div>
+
+<footer>Lighting Survey — Mai Vũ Lâm &nbsp;|&nbsp; maivulam2020@gmail.com</footer>
+
+</body>
+</html>

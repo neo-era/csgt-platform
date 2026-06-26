@@ -1,0 +1,20 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*~
+.vscode/*
+!.vscode/settings.json
+
+# Logs / tạm
+*.log
+node_modules/
+tmp/
+*.tmp
+
+# Bí mật — KHÔNG commit token
+secrets.json
+*.secret
+.env
+
+# Ảnh tải về cục bộ (ảnh thật lưu trên repo ảnh GitHub riêng)
+images/local/
