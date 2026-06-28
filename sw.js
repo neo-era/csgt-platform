@@ -5,7 +5,7 @@
  *  - CDN libs: cache-first
  *  - docs.google.com / script.google.com: KHÔNG cache (luôn lấy dữ liệu mới)
  */
-const VERSION   = 'csgt-v1';
+const VERSION   = 'csgt-v2';
 const SHELL     = 'csgt-shell-' + VERSION;
 const TILES     = 'csgt-tiles-' + VERSION;
 const LIBS      = 'csgt-libs-'  + VERSION;

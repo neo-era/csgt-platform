@@ -290,6 +290,10 @@
         </table>
     </div>
 
+    <!-- Thư viện lõi dùng chung (parser CSV mạnh + fetch cache-busting) -->
+    <script src="../core/core-config.js"></script>
+    <script src="../core/core-sync.js"></script>
+
     <script>
         // ── CẤU HÌNH ──────────────────────────────────────────────────────────
         // Điền URL CSV của sheet LichSu vào đây, hoặc để trống để nhập thủ công
@@ -330,10 +334,7 @@
             document.getElementById('emptyState').style.display = 'none';
 
             try {
-                const res = await fetch(csvUrl + '&t=' + Date.now());
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const text = await res.text();
-                const rows = parseCSV(text);
+                const rows = await CSGT.sync.fetchRows(csvUrl);
                 // Bỏ header, đảo ngược để mới nhất lên đầu
                 allRows = rows.length > 1 ? rows.slice(1).reverse() : [];
                 applyFilter();
@@ -349,28 +350,8 @@
             }
         }
 
-        // ── PARSE CSV ─────────────────────────────────────────────────────────
-        function parseCSV(text) {
-            const rows = [];
-            const lines = text.split(/\r?\n/);
-            for (const line of lines) {
-                if (!line.trim()) continue;
-                const cols = [];
-                let cur = '', inQ = false;
-                for (let i = 0; i < line.length; i++) {
-                    const c = line[i];
-                    if (c === '"') {
-                        if (inQ && line[i+1] === '"') { cur += '"'; i++; }
-                        else inQ = !inQ;
-                    } else if (c === ',' && !inQ) {
-                        cols.push(cur); cur = '';
-                    } else cur += c;
-                }
-                cols.push(cur);
-                rows.push(cols);
-            }
-            return rows;
-        }
+        // ── PARSE CSV → dùng CSGT.sync.parseCsvRows (core-sync.js) ──
+        // (parser mạnh: xử lý "" escape + xuống dòng trong ô — bản cũ inline bị vỡ)
 
         // ── LỌC & RENDER ─────────────────────────────────────────────────────
         function applyFilter() {
