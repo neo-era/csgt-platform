@@ -281,12 +281,20 @@
 
 <div id="toast"></div>
 
+<!-- Thư viện lõi dùng chung (endpoint/sheet/repo lấy từ CSGT_CONFIG, không hardcode) -->
+<script src="../core/core-config.js"></script>
+<script src="../core/core-sync.js"></script>
+<script src="../core/core-image.js"></script>
+<script src="../core/core-geo.js"></script>
+<script src="../core/core-export.js"></script>
+
 <script>
 'use strict';
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0YAMrbBpNdTL0cmE_1LdQ7SJzeUW0J0VHhWpv3WqW9LvLyBTP8YV2nPzuuR27pJTZ8g/exec';
-const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQC6mnGNSNDjUVzs5C4Se9Q9JQCGF9_YQRTRXewhsJhg0QDAcp6NqtxNsFl-fs8g1yyYBQEUqPhgwBv/pub?output=csv';
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/neo-era/dentat/main/';
-const MAX_IMG_LEN = 32767;
+// Endpoint/cấu hình lấy từ core-config (module 'dentat'), không hardcode trong trang.
+const DENTAT_CFG = CSGT_CONFIG.MODULES.dentat;
+const GOOGLE_SCRIPT_URL = CSGT_CONFIG.gasFor('dentat');
+const GITHUB_RAW_BASE = CSGT_CONFIG.GITHUB.rawBase(DENTAT_CFG.githubRepo);
+const MAX_IMG_LEN = DENTAT_CFG.maxImgLen || 32767;
 
 let markerImages = []; // [{dataUrl, path}]
 let toastTimer;
@@ -336,16 +344,13 @@ function getGPS() {
 }
 
 async function reverseGeocode(lat, lon) {
-  try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=vi`);
-    const d = await r.json();
-    const a = d.address || {};
-    const duong = a.road || a.pedestrian || a.footway || a.path || '';
-    const phuong = a.suburb || a.quarter || a.neighbourhood || a.village || a.county || '';
-    if (duong) document.getElementById('fDuong').value = duong;
-    if (phuong) document.getElementById('fPhuong').value = phuong;
-    if (duong || phuong) showToast('📍 Đã điền tên đường/phường');
-  } catch(e) {}
+  const a = await CSGT.geo.reverseGeocode(lat, lon);
+  if (!a) return;
+  const duong = CSGT.geo.roadFromAddress(a);
+  const phuong = a.suburb || a.quarter || a.neighbourhood || a.village || a.county || '';
+  if (duong) document.getElementById('fDuong').value = duong;
+  if (phuong) document.getElementById('fPhuong').value = phuong;
+  if (duong || phuong) showToast('📍 Đã điền tên đường/phường');
 }
 
 // ── IMAGE ──
@@ -355,22 +360,7 @@ function triggerImage() {
 }
 
 function resizeImage(dataUrl, cb) {
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    let w = img.width, h = img.height;
-    const sc = Math.min(1, 800 / Math.max(w, h));
-    w = Math.round(w*sc); h = Math.round(h*sc);
-    let q = 0.88;
-    const render = () => { canvas.width=w; canvas.height=h; ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h); return canvas.toDataURL('image/jpeg',q); };
-    let r = render();
-    while (r.length > MAX_IMG_LEN && q > 0.1) { q -= .08; r = render(); }
-    while (r.length > MAX_IMG_LEN && Math.max(w,h) > 100) { w=Math.round(w*.85); h=Math.round(h*.85); r=render(); }
-    cb(r.length <= MAX_IMG_LEN ? r : '', r.length > MAX_IMG_LEN ? 'Ảnh quá lớn' : '');
-  };
-  img.onerror = () => cb('', 'Không đọc được ảnh');
-  img.src = dataUrl;
+  CSGT.image.resize(dataUrl, { maxEdge: 800, maxLen: MAX_IMG_LEN, quality: 0.88 }, cb);
 }
 
 function handleImage(e) {
@@ -401,27 +391,14 @@ function renderImagePreview() {
 
 function removeImage(i) { markerImages.splice(i, 1); renderImagePreview(); }
 
-function getBase64FromDataUrl(d) { return d.replace(/^data:image\/[^;]+;base64,/, ''); }
-function getImageExtFromDataUrl(d) {
-  const m = d.match(/^data:image\/(\w+)/);
-  if (!m) return 'jpg';
-  const t = m[1].toLowerCase();
-  return t === 'png' ? 'jpg' : (t === 'webp' ? 'webp' : 'jpg');
-}
-
 async function uploadImageViaGas(dataUrl, soTru) {
-  const res = await fetch(GOOGLE_SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({
-      action: 'upload_image',
-      imageBase64: getBase64FromDataUrl(dataUrl),
-      ext: getImageExtFromDataUrl(dataUrl),
-      soTru: soTru || 'img'
-    })
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const data = JSON.parse(await res.text());
+  // Gửi kèm module:'dentat' để sẵn sàng cho GAS hợp nhất (GAS cũ bỏ qua field thừa)
+  const data = await CSGT.sync.postToGas(GOOGLE_SCRIPT_URL, {
+    action: 'upload_image', module: 'dentat',
+    imageBase64: CSGT.image.base64FromDataUrl(dataUrl),
+    ext: CSGT.image.extFromDataUrl(dataUrl),
+    soTru: soTru || 'img',
+  }, { readResponse: true });
   if (data.status !== 'ok') throw new Error(data.message || 'Upload thất bại');
   const p = data.path || '';
   return p.startsWith('http') ? p : GITHUB_RAW_BASE + p.replace(/^\//, '');
@@ -443,20 +420,7 @@ function fromInputDate(v) {
   return `${d}/${m}/${y}`;
 }
 
-// ── VN2000 ──
-function convertLatLonToVn2000(lat, lon) {
-  const toRad = x => x * Math.PI / 180, a = 6378137, f = 1/298.257222101;
-  const e2 = 2*f - f*f, k0 = 0.9996;
-  const zone = Math.floor((lon+180)/6)+1, lon0 = toRad(zone*6-183);
-  const phi = toRad(lat), lam = toRad(lon);
-  const sinP = Math.sin(phi), cosP = Math.cos(phi), tanP = Math.tan(phi);
-  const N = a/Math.sqrt(1-e2*sinP*sinP), T = tanP*tanP, C = e2/(1-e2)*cosP*cosP;
-  const A = (lam-lon0)*cosP;
-  const M = a*((1-e2/4-3*e2**2/64-5*e2**3/256)*phi-(3*e2/8+3*e2**2/32+45*e2**3/1024)*Math.sin(2*phi)+(15*e2**2/256+45*e2**3/1024)*Math.sin(4*phi)-(35*e2**3/3072)*Math.sin(6*phi));
-  const x = k0*N*(A+(1-T+C)*A**3/6+(5-18*T+T*T+72*C-58*e2/(1-e2))*A**5/120);
-  const y = k0*(M+N*tanP*(A**2/2+(5-T+9*C+4*C*C)*A**4/24+(61-58*T+T*T+600*C-330*e2/(1-e2))*A**6/720));
-  return { x: x+500000, y };
-}
+// ── VN2000 → dùng CSGT.export.latLonToVN2000 (core-export.js) ──
 
 // ── SUBMIT ──
 async function submitReport() {
@@ -489,11 +453,12 @@ async function submitReport() {
 
   const lat = parseFloat(document.getElementById('fLat').value);
   const lon = parseFloat(document.getElementById('fLon').value);
-  const vn = (Number.isFinite(lat) && Number.isFinite(lon)) ? convertLatLonToVn2000(lat, lon) : { x: '', y: '' };
+  const vn = (Number.isFinite(lat) && Number.isFinite(lon)) ? CSGT.export.latLonToVN2000(lat, lon) : { x: '', y: '' };
   const phone = normalizePhone(document.getElementById('fDienThoai').value.trim());
 
   const payload = {
     action: 'full_update',
+    module: 'dentat',
     id: nextId || String(Date.now()),
     soTru,
     lat: Number.isFinite(lat) ? lat : '',
@@ -512,11 +477,7 @@ async function submitReport() {
 
   btn.disabled = true; btn.textContent = '⌛ Đang gửi...';
   try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    await CSGT.sync.postToGas(GOOGLE_SCRIPT_URL, payload, { readResponse: false });
     document.getElementById('successMsg').textContent = `Phiếu #${payload.id} (${soTru}) đã lưu vào hệ thống.`;
     document.getElementById('successCard').classList.add('show');
     window.scrollTo({ top: 0, behavior: 'smooth' });
