@@ -95,6 +95,9 @@ function doPost(e) {
       case 'login':
         return handleLogin(cfg, moduleId, (data.username || '').trim(), data.password || '');
 
+      case 'change_credentials':
+        return handleChangeCredentials(cfg, moduleId, data);
+
       case 'upload_image':
         return handleImageUpload(cfg, data.imageBase64 || '', data.soTru || '', data.ext || 'jpg');
 
@@ -241,6 +244,57 @@ function migratePasswordsToHash() {
   });
   Logger.log(report.join('\n'));
   return report;
+}
+
+// ── ĐỔI TÀI KHOẢN / MẬT KHẨU (cập nhật TaiKhoan, hash mật khẩu mới) ──────────
+// Payload: { username (hiện tại), currentPassword, newUsername?, newPassword? }
+function handleChangeCredentials(cfg, moduleId, data) {
+  const sheet = getUsersSheet(moduleId);
+  if (!sheet) return jsonResponse({ status: 'error', message: 'Sheet "TaiKhoan" chưa được tạo.' });
+  const all = sheet.getDataRange().getValues();
+  if (all.length < 2) return jsonResponse({ status: 'error', message: 'Chưa có tài khoản nào.' });
+
+  const headers = all[0].map(function (h) { return norm(String(h)); });
+  const cU = headers.indexOf(norm('tenDangNhap'));
+  const cP = headers.indexOf(norm('matKhau'));
+  if (cU === -1 || cP === -1) return jsonResponse({ status: 'error', message: 'TaiKhoan thiếu cột tenDangNhap/matKhau.' });
+
+  const username = norm(String(data.username || ''));
+  const currentPassword = String(data.currentPassword || '');
+  const newUsername = String(data.newUsername || '').trim();
+  const newPassword = String(data.newPassword || '');
+
+  // Tìm hàng tài khoản hiện tại
+  let rowIdx = -1;
+  for (let i = 1; i < all.length; i++) {
+    if (norm(String(all[i][cU] || '')) === username) { rowIdx = i; break; }
+  }
+  if (rowIdx === -1) return jsonResponse({ status: 'error', message: 'Không tìm thấy tài khoản.' });
+
+  // Xác thực mật khẩu hiện tại (hash-aware như handleLogin)
+  const stored = String(all[rowIdx][cP] || '');
+  const okPass = looksHashed(stored)
+    ? (hashPassword(currentPassword) === stored.toLowerCase())
+    : (stored === currentPassword);
+  if (!okPass) return jsonResponse({ status: 'error', message: 'Mật khẩu hiện tại không đúng.' });
+
+  // Đổi tên đăng nhập (nếu có) — không cho trùng người khác
+  if (newUsername) {
+    const newNorm = norm(newUsername);
+    for (let i = 1; i < all.length; i++) {
+      if (i !== rowIdx && norm(String(all[i][cU] || '')) === newNorm) {
+        return jsonResponse({ status: 'error', message: 'Tên đăng nhập đã tồn tại.' });
+      }
+    }
+    sheet.getRange(rowIdx + 1, cU + 1).setValue(newUsername);
+  }
+
+  // Đổi mật khẩu (nếu có) — luôn lưu dạng hash
+  if (newPassword) {
+    sheet.getRange(rowIdx + 1, cP + 1).setValue(hashPassword(newPassword));
+  }
+
+  return jsonResponse({ status: 'ok', newUsername: newUsername || String(all[rowIdx][cU]).trim() });
 }
 
 // ── GHI / SỬA / XÓA ─────────────────────────────────────────────────────────

@@ -68,7 +68,7 @@
   };
 
   // ── VN2000 / CAD (transform tọa độ dùng chung cho cả 2 module) ─────────────
-  const VN2000 = { k0: 0.9996, ellipsoid: 'WGS84' /* a=6378137, f=1/298.257223563 */ };
+  const VN2000 = { k0: 0.9996, ellipsoid: 'WGS84' /* a=6378137; core-export dùng f=1/298.257222101 (GRS80) — sai khác sub-mm */ };
 
   // ── MODULE: KHẢO SÁT (lighting-survey) ─────────────────────────────────────
   const KHAOSAT = {
