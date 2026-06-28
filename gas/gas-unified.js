@@ -11,6 +11,12 @@
  *  2. Điền SPREADSHEET_IDS bên dưới (ID Spreadsheet của từng module —
  *     lấy từ URL Google Sheet: .../spreadsheets/d/<ID>/edit).
  *  3. Project Settings → Script Properties → thêm GITHUB_TOKEN (PAT scope contents:write).
+ *     (Tùy chọn) thêm AUTH_PEPPER = chuỗi bí mật để tăng độ mạnh hash mật khẩu.
+ *     ⚠️ Đặt AUTH_PEPPER TRƯỚC khi đăng nhập/migrate — đổi sau sẽ làm sai mọi hash cũ.
+ *  3b. Mật khẩu TaiKhoan lưu dạng hash SHA-256. Chạy hàm migratePasswordsToHash()
+ *      một lần trong editor để hash các mật khẩu plaintext sẵn có (đăng nhập đúng
+ *      cũng tự nâng cấp từng tài khoản sang hash).
+ *  3c. 2 module DÙNG CHUNG 1 Spreadsheet → SPREADSHEET_IDS.khaosat = .dentat = cùng ID.
  *  4. Deploy → New deployment → type "Web app":
  *        Execute as: Me
  *        Who has access: Anyone   ← bắt buộc để client đọc được JSON (CORS)
@@ -22,9 +28,11 @@
  * ========================================================================== */
 
 // ── ID Spreadsheet của từng module (BẮT BUỘC điền) ──────────────────────────
+// 2 module DÙNG CHUNG 1 Spreadsheet (cùng dữ liệu trụ/đèn — Xã Cần Giuộc).
+const SHARED_SPREADSHEET_ID = '1u1KIDPX5INt-9bI6EDK-K6VKSCJAoey7drElKW3rLS0';
 const SPREADSHEET_IDS = {
-  khaosat: 'PASTE_KHAOSAT_SPREADSHEET_ID',   // Spreadsheet khảo sát (chứa DanhSachTru + các tab địa bàn)
-  dentat:  'PASTE_DENTAT_SPREADSHEET_ID',    // Spreadsheet đèn tắt (chứa DanhSachDen)
+  khaosat: SHARED_SPREADSHEET_ID,   // chứa DanhSachTru + TaiKhoan + LichSu
+  dentat:  SHARED_SPREADSHEET_ID,   // chứa DanhSachDen (+ PhuTrach) — cùng file
 };
 
 // ── Sheet ở FILE NGOÀI (mở bằng openById theo tên tab) ──────────────────────
@@ -176,21 +184,63 @@ function handleLogin(cfg, moduleId, username, password) {
   const uNorm = norm(username);
   for (let i = 1; i < all.length; i++) {
     const row = all[i];
-    if (norm(String(row[cU] || '')) === uNorm && String(row[cP] || '') === String(password)) {
-      const vungRaw = cV >= 0 ? String(row[cV] || '').trim() : '';
-      const vung = vungRaw ? vungRaw.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
-      return jsonResponse({
-        status: 'ok',
-        user: {
-          username:    String(row[cU]).trim(),
-          displayName: cN >= 0 ? (String(row[cN] || '').trim() || username) : username,
-          role:        cR >= 0 ? norm(String(row[cR] || '')) : 'user',
-          vung:        vung,
-        },
-      });
+    if (norm(String(row[cU] || '')) !== uNorm) continue;
+
+    const stored = String(row[cP] || '');
+    let ok;
+    if (looksHashed(stored)) {
+      ok = hashPassword(password) === stored.toLowerCase();
+    } else {
+      ok = stored === String(password);   // tài khoản plaintext cũ
+      // Auto-upgrade: đăng nhập đúng → thay plaintext bằng hash ngay (row sheet = i+1, cột = cP+1)
+      if (ok && stored) {
+        try { sheet.getRange(i + 1, cP + 1).setValue(hashPassword(password)); }
+        catch (e) { Logger.log('auto-upgrade hash fail: ' + e.message); }
+      }
     }
+    if (!ok) continue;
+
+    const vungRaw = cV >= 0 ? String(row[cV] || '').trim() : '';
+    const vung = vungRaw ? vungRaw.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
+    return jsonResponse({
+      status: 'ok',
+      user: {
+        username:    String(row[cU]).trim(),
+        displayName: cN >= 0 ? (String(row[cN] || '').trim() || username) : username,
+        role:        cR >= 0 ? norm(String(row[cR] || '')) : 'user',
+        vung:        vung,
+      },
+    });
   }
   return jsonResponse({ status: 'error', message: 'Sai tên đăng nhập hoặc mật khẩu.' });
+}
+
+// ── MIGRATE: hash toàn bộ mật khẩu plaintext trong TaiKhoan (chạy 1 lần) ─────
+// Cách dùng: đặt AUTH_PEPPER (nếu muốn) → mở Apps Script editor → chọn hàm này
+// → Run. Chạy lại nhiều lần vô hại (bỏ qua giá trị đã là hash).
+function migratePasswordsToHash() {
+  const report = [];
+  Object.keys(MODULES).forEach(function (moduleId) {
+    const sheet = getUsersSheet(moduleId);
+    if (!sheet) { report.push(moduleId + ': không có sheet TaiKhoan'); return; }
+    const all = sheet.getDataRange().getValues();
+    if (all.length < 2) { report.push(moduleId + ': trống'); return; }
+    const headers = all[0].map(function (h) { return norm(String(h)); });
+    const cP = headers.indexOf(norm('matKhau'));
+    if (cP === -1) { report.push(moduleId + ': thiếu cột matKhau'); return; }
+
+    let changed = 0;
+    for (let i = 1; i < all.length; i++) {
+      const stored = String(all[i][cP] || '');
+      if (stored && !looksHashed(stored)) {
+        sheet.getRange(i + 1, cP + 1).setValue(hashPassword(stored));
+        changed++;
+      }
+    }
+    report.push(moduleId + ': đã hash ' + changed + '/' + (all.length - 1) + ' tài khoản');
+  });
+  Logger.log(report.join('\n'));
+  return report;
 }
 
 // ── GHI / SỬA / XÓA ─────────────────────────────────────────────────────────
@@ -327,6 +377,20 @@ function handleLogAction(cfg, moduleId, data) {
 }
 
 // ── HELPERS ─────────────────────────────────────────────────────────────────
+// Hash mật khẩu: SHA-256(password + pepper) → hex 64 ký tự.
+// Pepper (tùy chọn) lấy từ Script Property 'AUTH_PEPPER' — PHẢI đặt TRƯỚC khi
+// hash/migrate, đổi pepper sau sẽ làm sai toàn bộ hash cũ.
+function hashPassword(plain) {
+  const pepper = PropertiesService.getScriptProperties().getProperty('AUTH_PEPPER') || '';
+  const bytes = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256, String(plain) + pepper, Utilities.Charset.UTF_8);
+  return bytes.map(function (b) { return ('0' + (b & 0xff).toString(16)).slice(-2); }).join('');
+}
+// Giá trị lưu trong cột matKhau trông giống hash SHA-256 (64 hex)?
+function looksHashed(s) {
+  return /^[0-9a-f]{64}$/i.test(String(s || ''));
+}
+
 function norm(s) {
   return String(s == null ? '' : s).trim().toLowerCase();
 }

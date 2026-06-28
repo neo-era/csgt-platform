@@ -1,0 +1,9 @@
+{
+  "name": "csgt-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hệ thống Quản lý Chiếu sáng Công cộng Xã Cần Giuộc — khảo sát + đèn tắt (PWA tĩnh, không build)",
+  "scripts": {
+    "test": "node tests/core.test.js"
+  }
+}
