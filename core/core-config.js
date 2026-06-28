@@ -14,9 +14,7 @@
   // ── Spreadsheet "publish to web" base (đọc dữ liệu dạng CSV) ───────────────
   // d/e/<PUB_ID>/pub?gid=<gid>&single=true&output=csv
   const PUB = {
-    // Spreadsheet KHẢO SÁT (lighting-survey) — chứa các tab địa bàn
-    KHAOSAT: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRjBdN5epr38kL2jLituPUC4wJO_Ohr_AsFpzaZh6Azxxs_gkzGT5s3JiZ1uFkNQFP5epR2U_wYT6wT',
-    // Spreadsheet Cần Giuộc (khảo sát — file ngoài)
+    // Spreadsheet KHẢO SÁT — Xã Cần Giuộc (dùng chung dữ liệu trụ/đèn)
     KHAOSAT_CANGIUOC: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzNnhFDaoZgyX-jqCUuVkq0NsdqasekQd53CoaI3racianUs--NgA1ZWjkz1wKRoFrhmUuOaO2_7xA',
     // Spreadsheet ĐÈN TẮT (dentat)
     DENTAT: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQC6mnGNSNDjUVzs5C4Se9Q9JQCGF9_YQRTRXewhsJhg0QDAcp6NqtxNsFl-fs8g1yyYBQEUqPhgwBv',
@@ -79,27 +77,11 @@
     sheetMain: 'DanhSachTru',
     authSheet: 'TaiKhoan',
     auditSheet: 'LichSu',
-    idPrefix: { DanhSachTru: 'TQ', Quan1: 'Q1', Quan3: 'Q3', Quan5: 'Q5', Quan8: 'Q8',
-      Quan10: 'Q10', Quan11: 'Q11', PhuNhuan: 'PN', BinhThanh: 'BT', TanBinh: 'TB',
-      TanPhu: 'TP', BauBang: 'BB', TruVanTho: 'TVT', BenCat: 'BC', CanGiuoc: 'CG' },
+    idPrefix: { CanGiuoc: 'CG' },
     externalSpreadsheetIds: { CanGiuoc: '1u1KIDPX5INt-9bI6EDK-K6VKSCJAoey7drElKW3rLS0' },
-    // Các địa bàn (sheet + CSV đọc)
+    // Địa bàn: chỉ Xã Cần Giuộc (đã bỏ toàn bộ địa bàn TP.HCM)
     districts: [
-      { label: 'Tổng quan',      sheet: 'DanhSachTru', csvUrl: csv(PUB.KHAOSAT) },
-      { label: 'Quận 1',         sheet: 'Quan1',       csvUrl: csv(PUB.KHAOSAT, 1271544040) },
-      { label: 'Quận 3',         sheet: 'Quan3',       csvUrl: csv(PUB.KHAOSAT, 1447329018) },
-      { label: 'Quận 5',         sheet: 'Quan5',       csvUrl: csv(PUB.KHAOSAT, 1006624157) },
-      { label: 'Quận 8',         sheet: 'Quan8',       csvUrl: csv(PUB.KHAOSAT, 1954134043) },
-      { label: 'Quận 10',        sheet: 'Quan10',      csvUrl: csv(PUB.KHAOSAT, 1889500142) },
-      { label: 'Quận 11',        sheet: 'Quan11',      csvUrl: csv(PUB.KHAOSAT, 1388818107) },
-      { label: 'Phú Nhuận',      sheet: 'PhuNhuan',    csvUrl: csv(PUB.KHAOSAT, 288578187) },
-      { label: 'Bình Thạnh',     sheet: 'BinhThanh',   csvUrl: csv(PUB.KHAOSAT, 1150307229) },
-      { label: 'Tân Bình',       sheet: 'TanBinh',     csvUrl: csv(PUB.KHAOSAT, 1730482763) },
-      { label: 'Tân Phú',        sheet: 'TanPhu',      csvUrl: csv(PUB.KHAOSAT, 1223298612) },
-      { label: 'Xã Bàu Bàng',    sheet: 'BauBang',     csvUrl: csv(PUB.KHAOSAT, 784296746) },
-      { label: 'Xã Trừ Văn Thố', sheet: 'TruVanTho',   csvUrl: csv(PUB.KHAOSAT, 110776181) },
-      { label: 'Phường Bến Cát', sheet: 'BenCat',      csvUrl: csv(PUB.KHAOSAT, 1560529310) },
-      { label: 'Cần Giuộc',      sheet: 'CanGiuoc',    csvUrl: csv(PUB.KHAOSAT_CANGIUOC, 1149202043) },
+      { label: 'Cần Giuộc', sheet: 'CanGiuoc', csvUrl: csv(PUB.KHAOSAT_CANGIUOC, 1149202043) },
     ],
     // Ánh xạ key JS -> tên cột thật trên Sheet (KHÔNG đổi tên cột Sheet đang chạy)
     fieldMap: {

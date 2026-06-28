@@ -3126,14 +3126,9 @@
         // ── ĐA ĐỊA BÀN — cấu hình CSV URL sau khi publish từng tab trong Google Sheet ──
         const DISTRICT_PAGES = _MOD.districts;  // lấy từ core-config.js
 
-        const SHEET_ID_PREFIX = {
-            DanhSachTru: 'TQ', Quan1: 'Q1', Quan3: 'Q3', Quan5: 'Q5',
-            Quan8: 'Q8', Quan10: 'Q10', Quan11: 'Q11',
-            PhuNhuan: 'PN', BinhThanh: 'BT', TanBinh: 'TB', TanPhu: 'TP',
-            BauBang: 'BB', TruVanTho: 'TVT', BenCat: 'BC', CanGiuoc: 'CG'
-        };
+        const SHEET_ID_PREFIX = { CanGiuoc: 'CG' };  // chỉ Xã Cần Giuộc; sheet khác → 'XX' (fallback)
 
-        let currentSheet = 'DanhSachTru';
+        let currentSheet = 'CanGiuoc';
 
         // Nút showMoreBtn — giữ tương thích, không làm gì trong UI mới
         function toggleShowMore() {}
