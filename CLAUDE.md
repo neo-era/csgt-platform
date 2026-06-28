@@ -1,18 +1,60 @@
-# CLAUDE.md — CSGT Platform
+# CLAUDE.md — CSGT Platform (Xã Cần Giuộc)
 
-Hướng dẫn cho Claude Code (và lập trình viên) khi làm việc trong repo này.
+> Quy ước, quy trình và tài liệu kỹ thuật cho Claude Code (và lập trình viên) trong repo này.
+> **Đọc file này đầu mỗi phiên. Cập nhật ở bước Reflect cuối mỗi vòng.**
 
 ---
 
-## 1. Dự án là gì
+## 0. Bối cảnh dự án
 
-**CSGT Platform** — *Hệ thống Quản lý Chiếu sáng Công cộng* của CSCC TP.HCM.
+- **Tên:** CSGT Platform — *Hệ thống Quản lý Chiếu sáng Công cộng* của **Xã Cần Giuộc**.
+- **Mục tiêu:** Kiểm kê trụ–tủ–đèn trên bản đồ và theo dõi đèn hư/tắt — phục vụ quản lý, sửa chữa, lập biên bản sự cố chiếu sáng công cộng.
+- **Người dùng:** Cán bộ kỹ thuật chiếu sáng công cộng Xã Cần Giuộc; thêm kênh người dân báo sự cố.
+- **Trạng thái:** Đang phát triển — đã gộp 2 module vào chung hạ tầng, đang hợp nhất backend GAS.
+- **Chủ dự án:** Mai Vũ Lâm — LAVIPCO. Giao tiếp và tài liệu bằng **tiếng Việt**.
+
+---
+
+## 1. Quy tắc vàng (đọc trước khi làm bất cứ việc gì)
+
+1. **KHÔNG CODE NGAY.** Luôn đi qua quy trình Sprint ở Mục 2.
+2. **Mỗi lần chỉ làm MỘT task.** Xong thì **DỪNG**, tóm tắt thay đổi + cách kiểm tra, **đợi tôi duyệt** rồi mới sang task kế.
+3. **Không tự ý mở rộng phạm vi.** Phát hiện việc ngoài plan → ghi vào Backlog (Mục 18), hỏi trước khi làm.
+4. **Thà hỏi 1 câu làm rõ** còn hơn đoán sai rồi làm lại.
+5. **Commit nhỏ:** mỗi commit = 1 task, mô tả rõ ràng bằng tiếng Việt.
+6. **Không sửa test để né lỗi.** Test đỏ thì sửa code.
+7. Khi báo cáo: nói **đã thay đổi gì**, **cách kiểm tra**, **rủi ro còn lại** — ngắn gọn.
+
+---
+
+## 2. Quy trình Sprint (mỗi vòng = một lát cắt tính năng nhỏ, ship được)
+
+`Think → Plan → Build → Review → Test → Ship → Reflect → ↻`
+
+Mỗi bước có **cổng (gate)**; chưa đạt cổng thì **không** sang bước sau.
+
+| # | Bước | Cổng để qua |
+|---|------|-------------|
+| 01 | **Think** — hiểu vấn đề | Nói được “Xong nghĩa là gì” + 3–5 tiêu chí chấp nhận + non-goals |
+| 02 | **Plan** — thiết kế | Task list được duyệt, mỗi task có cách kiểm tra; rủi ro lớn có cách xử lý |
+| 03 | **Build** — xây dựng | Task chạy, không phá app, có diff + cách kiểm tra |
+| 04 | **Review** — soát xét | Hết issue mức Blocker; code khớp plan & tiêu chí |
+| 05 | **Test** — kiểm thử | 100% tiêu chí chấp nhận pass; chạy thử trên trình duyệt; không bug nặng |
+| 06 | **Ship** — phát hành | Deploy ok, smoke test ok, có đường lùi (rollback) |
+| 07 | **Reflect** — nhìn lại | ≥1 cải tiến quy trình + backlog vòng sau; **cập nhật file này** |
+
+> Mặc định: ở **Plan** hãy dùng *plan mode* — lập kế hoạch trước, không sửa file cho tới khi tôi duyệt.
+
+---
+
+## 3. Dự án là gì
+
 Repo gộp của hai web app cùng tác giả (Mai Vũ Lâm), cùng hạ tầng, **giữ 2 module riêng**:
 
 | Module | Thư mục | Vai trò | Nguồn gốc |
 |---|---|---|---|
 | **Khảo sát** | `khaosat/` | Kiểm kê trụ–tủ–đèn trên bản đồ, GPS/RTK, xuất CAD VN2000, bản vẽ | `lighting-survey` cũ |
-| **Đèn tắt** | `dentat/` | Theo dõi đèn hư/tắt, biên bản sự cố, phối hợp TTQLHTKT, kênh người dân | `dentat` cũ |
+| **Đèn tắt** | `dentat/` | Theo dõi đèn hư/tắt, biên bản sự cố, phối hợp đơn vị quản lý hạ tầng, kênh người dân | `dentat` cũ |
 
 Hai module là **hai nửa của một vòng đời**: khảo sát *sinh ra* dữ liệu trụ → đèn tắt *theo dõi sự cố* trên cùng cây trụ đó.
 
@@ -20,7 +62,20 @@ Tài liệu liên quan: `docs/KE-HOACH-GOP-DU-AN.md` (lộ trình gộp), `docs/
 
 ---
 
-## 2. Kiến trúc (serverless, không build step)
+## 4. Tech stack
+
+| Lớp | Công nghệ |
+|---|---|
+| **Frontend** | HTML thuần + vanilla JS (PWA) — **không framework, không bundler** |
+| **Backend** | Google Apps Script (Web App) |
+| **Dữ liệu** | Google Sheets (đọc CSV published-to-web, ghi qua GAS) |
+| **Lưu ảnh** | GitHub Contents API → `raw.githubusercontent` |
+| **Hạ tầng** | GitHub Pages (site tĩnh) |
+| **Ngôn ngữ chính** | JavaScript |
+
+---
+
+## 5. Kiến trúc (serverless, không build step)
 
 ```
 Trình duyệt (PWA, vanilla JS)
@@ -36,7 +91,7 @@ Trình duyệt (PWA, vanilla JS)
 
 ---
 
-## 3. Cấu trúc thư mục
+## 6. Cấu trúc thư mục
 
 ```
 csgt-platform/
@@ -61,7 +116,7 @@ csgt-platform/
 
 ---
 
-## 4. Thư viện core — `window.CSGT`
+## 7. Thư viện core — `window.CSGT`
 
 Nạp theo thứ tự: **config → sync → (auth/map/image/geo/export)**. Tất cả expose qua `window.CSGT`, cấu hình qua `window.CSGT_CONFIG`.
 
@@ -104,14 +159,16 @@ Nạp theo thứ tự: **config → sync → (auth/map/image/geo/export)**. Tấ
 
 ---
 
-## 5. Data model — Google Sheets
+## 8. Data model — Google Sheets
 
-Mỗi module có Spreadsheet riêng (sẽ hợp nhất sau). **Tuyệt đối không đổi tên cột Sheet đang chạy** — chỉ ánh xạ qua `fieldMap` trong `core-config.js`.
+> **⚠️ Chung dữ liệu trụ/đèn:** Hai module thao tác trên **cùng một danh sách trụ vật lý** — khảo sát kiểm kê cây trụ, đèn tắt theo dõi sự cố *trên chính cây trụ đó*. Tức `DanhSachTru` (khảo sát) và `DanhSachDen` (đèn tắt) mô tả **cùng tập trụ**, không phải hai tập tách biệt. Khi sửa data model/config/đồng bộ, phải coi đây là **một nguồn trụ chung** (mục tiêu hợp nhất). Hiện cấu hình code vẫn còn 2 Spreadsheet/2 GAS riêng — cần dọn ở task sau.
 
-### Khảo sát — sheet `DanhSachTru` (+ 14 tab địa bàn)
+Mỗi module hiện trỏ Spreadsheet riêng (sẽ hợp nhất sau). **Tuyệt đối không đổi tên cột Sheet đang chạy** — chỉ ánh xạ qua `fieldMap` trong `core-config.js`.
+
+### Khảo sát — sheet `DanhSachTru`
 25 cột: `ID, Tên trụ, Lat, Lon, Ghi chú, Người KS, Loại, Tủ điều khiển, Loại trụ, Loại cần, Loại đèn, Công suất, Ảnh, Thời gian cập nhật, Marker gốc, Khoảng cách (m), Mã PE, Đường, Phường/ Xã, VN2000-X, VN2000-Y, Số lượng đèn, Loại cáp, Độ chính xác (m), Chế độ GPS`.
-- Cần Giuộc ở **Spreadsheet ngoài** (`EXTERNAL_SPREADSHEET_IDS.CanGiuoc`).
-- ID có prefix theo địa bàn: TQ, Q1, Q3, …, CG (`CG_001`).
+- Dữ liệu Cần Giuộc ở Spreadsheet riêng (`EXTERNAL_SPREADSHEET_IDS.CanGiuoc`).
+- ID có prefix địa bàn `CG` (vd `CG_001`).
 - Sheet phụ: `TaiKhoan` (auth, có cột `vung`), `LichSu` (audit log).
 
 ### Đèn tắt — sheet `DanhSachDen`
@@ -124,7 +181,7 @@ Mỗi module có Spreadsheet riêng (sẽ hợp nhất sau). **Tuyệt đối kh
 
 ---
 
-## 6. Backend GAS
+## 9. Backend GAS
 
 Hiện **hai file GAS riêng** (chưa đưa vào repo này — sống trong Apps Script của từng Spreadsheet):
 - Khảo sát: `gas-khaosat.js` (CORS bật → client đọc JSON).
@@ -143,51 +200,104 @@ GAS.USE_UNIFIED = true;   // gasFor() tự dùng URL chung; client đặt readRe
 
 ---
 
-## 7. Quy ước code
+## 10. Quy ước code
 
 - **Ngôn ngữ:** 100% tiếng Việt (UI, comment, tên biến xen tiếng Việt). Giữ nguyên phong cách này.
 - **Vanilla JS, không build.** Thêm thư viện qua `<script src>` CDN. Core là IIFE gắn vào `window.CSGT`.
 - **Endpoint không hardcode** trong module — luôn lấy từ `window.CSGT_CONFIG`.
-- **Logic dùng chung** → `core/`. **Logic nghiệp vụ riêng** → giữ trong module (xem mục 8).
+- **Logic dùng chung** → `core/` (một nguồn duy nhất). **Logic nghiệp vụ riêng** → giữ trong module (xem Mục 11).
+- Ưu tiên **rõ ràng hơn khôn khéo**; hàm nhỏ, một việc; tách logic dùng lại thành hàm/module riêng.
+- Không thêm thư viện mới nếu chưa thật cần — nếu cần, **nêu lý do** trước.
+- Xử lý lỗi tường minh; không nuốt exception âm thầm.
 - **Phân quyền nằm ở client** (server GAS hiện tin client). Khi cần chặt hơn, thêm kiểm tra ở GAS.
 - **PWA:** đổi code core/HTML → tăng `VERSION` trong `sw.js` để client tải bản mới.
-- **Link tương đối trong module con:** `../manifest.json`, `../sw.js`, cross-link module: `../dentat/index.html`.
+- **Link tương đối trong module con:** `../manifest.json`, `../sw.js`; cross-link module: `../dentat/index.html`.
+- Bí mật (API key, token) để trong Script Property / biến môi trường, **không** commit.
 
 ---
 
-## 8. Logic GIỮ RIÊNG mỗi module (không đưa vào core)
+## 11. Logic GIỮ RIÊNG mỗi module (không đưa vào core)
 
 - **Khảo sát:** schema 25 cột + `FIELD_MAP` khảo sát; chế độ GPS Phone/RTK; icon marker theo loại đèn/công suất; sơ đồ cáp & vẽ cáp (`banve-mau.html`); bản vẽ kỹ thuật (khung tên); audit `LichSu`; chỉ đường OSRM; xem phố Mapillary.
 - **Đèn tắt:** `STATUS_CONFIG` + `createStatusIcon`; quick fix; biên bản sự cố (`printBienBan`/Word); nhập từ Zalo (`parseZaloMessage`/`parseLatLonFromText`); kênh người dân `bcsc.html`; quy trình phối hợp `quytrinh.html`.
 
 ---
 
-## 9. Deploy / chạy
+## 12. Quy ước file & tài liệu (LAVIPCO)
 
+- **Tài liệu hành chính/pháp lý:** dùng font **Times New Roman** (TIMES.TTF, TIMESBD.TTF, TIMESI.TTF, TIMESBI.TTF). Nếu môi trường chưa có font, hãy yêu cầu cung cấp trước khi xuất.
+- **Đặt tên file xuất kèm đuôi đôi** để giữ phần mở rộng sau khi tải, ví dụ: `Bao_gia_v1.1.pdf.pdf`, `Bao_cao.docx.docx`.
+- **Tăng version mỗi lần xuất:** `v1.0 → v1.1 → v1.2 …`
+- **Định dạng ngày:** `dd/mm/yyyy`. Tiền tệ: VND, phân tách hàng nghìn bằng dấu chấm.
+- Tên thư mục/file không dấu, dùng `_` thay khoảng trắng.
+
+---
+
+## 13. Lệnh thường dùng & Deploy
+
+- **Chạy local:** VS Code Live Server (port 5502 trong `.vscode/settings.json`) → mở `index.html`. Không có bước cài đặt/build/test runner.
 - **Hosting:** GitHub Pages từ repo này (site tĩnh). `start_url` = `index.html`.
 - **CI:** `.github/workflows/bump-version.yml` tự tăng `data/version.json` mỗi push vào `main` (trừ khi chỉ đổi version.json).
-- **GAS:** sửa code GAS → Apps Script → Deploy → Web App (Execute as Me, Anyone) → cập nhật URL vào `core-config.js`.
-- **Chạy local:** VS Code Live Server (port 5502 trong `.vscode/settings.json`) → mở `index.html`.
+- **Deploy app:** push lên `main` → GitHub Pages tự cập nhật; nhớ tăng `VERSION` trong `sw.js` khi đổi core/HTML.
+- **Deploy GAS:** sửa code GAS → Apps Script → Deploy → Web App (Execute as Me, Anyone) → cập nhật URL vào `core-config.js`.
 - Cần thêm icon PWA thật vào `data/icon-192.png`, `data/icon-512.png` (đã có bản copy từ dentat).
 
 ---
 
-## 10. Lưu ý quan trọng (gotchas)
+## 14. Definition of Done (một task coi là xong khi)
+
+- [ ] Đạt đúng các tiêu chí chấp nhận đã chốt ở **Think**.
+- [ ] Đã chạy thử trên trình duyệt (cả mobile nếu liên quan UI) và hoạt động đúng.
+- [ ] Đã tự review theo checklist Mục 15.
+- [ ] Không phá tính năng cũ (không hồi quy).
+- [ ] Commit nhỏ, mô tả rõ; `VERSION`/tài liệu cập nhật nếu cần.
+
+---
+
+## 15. Checklist Review (đóng vai reviewer khó tính, không tự khen)
+
+- [ ] Đúng tiêu chí chấp nhận?
+- [ ] Edge case: rỗng, âm, quá lớn, mất mạng, dữ liệu sai, CSV lỗi định dạng?
+- [ ] Lỗi bảo mật: lộ key/token, injection, phân quyền?
+- [ ] Trùng lặp / có thể tách vào `core/` dùng lại?
+- [ ] Không đổi tên cột Sheet đang chạy?
+- [ ] Đặt tên rõ; không để lại code chết, log rác?
+- [ ] Phụ thuộc mới có thật cần thiết?
+
+---
+
+## 16. KHÔNG làm
+
+- Không nhảy thẳng vào code khi chưa qua Think/Plan.
+- Không làm cả tính năng trong một lượt; không gộp nhiều task vào một commit lớn.
+- Không lệch khỏi plan mà không báo.
+- Không ship khi chưa chạy thử hoặc chưa có rollback.
+- Không xóa/sửa hàng loạt file ngoài phạm vi task đang làm.
+- Không đổi tên cột Sheet, không hardcode endpoint trong module.
+
+---
+
+## 17. Lưu ý quan trọng (gotchas)
 
 - **OneDrive không chứa được `.git` đang hoạt động** — thao tác git trực tiếp trong thư mục OneDrive sẽ lỗi "Operation not permitted". Clone/làm việc ở thư mục **ngoài** OneDrive, hoặc dùng bản `.zip` repo.
 - **Không đổi tên cột Sheet** (`lontitude`, `Trang thai`, `HÌnh ảnh` là cố ý) — chỉ ánh xạ qua `fieldMap`.
 - **Đổi code GAS phải Deploy lại Web App** rồi cập nhật URL trong `core-config.js`.
 - **Đổi repo ảnh** → cập nhật `GITHUB.REPO_*` và giữ/migrate đường dẫn `raw.githubusercontent` cũ để không vỡ ảnh lịch sử.
 - **`bcsc.html` và `lichsu.html`** hiện còn dùng CSV/GAS inline riêng — chưa centralize (tùy chọn làm sau).
-- Mật khẩu trong `TaiKhoan` đang **plaintext** — khi hợp nhất nên hash.
+- Mật khẩu `TaiKhoan` lưu **hash SHA-256** (`gas-unified.js`: `hashPassword`); đăng nhập đúng tự nâng cấp plaintext cũ → hash, hoặc chạy `migratePasswordsToHash()` một lần. Tùy chọn Script Property `AUTH_PEPPER` (đặt **trước** khi migrate/login).
 
 ---
 
-## 11. Roadmap
+## 18. Roadmap & Backlog
+
+> Claude cập nhật mục này ở bước **Reflect**.
 
 - [x] Giai đoạn 1 — chung hạ tầng (repo, core-config, PWA, CI)
 - [x] Giai đoạn 2 — tách 6 module core + chuyển UI cả 2 module sang dùng core
 - [x] GAS hợp nhất đã viết: `gas/gas-unified.js` (+ `gas/README.md`); 2 module đã có shim tự chèn `module`
 - [ ] **Deploy** `gas/gas-unified.js` (điền SPREADSHEET_IDS + GITHUB_TOKEN, Deploy Web App "Anyone")
       rồi điền `GAS.UNIFIED` + bật `GAS.USE_UNIFIED=true` trong `core-config.js`
-- [ ] (Tù
+- [ ] Centralize CSV/GAS inline trong `bcsc.html` và `lichsu.html`
+- [x] Hash mật khẩu trong `TaiKhoan` (SHA-256 + auto-upgrade + `migratePasswordsToHash()` trong `gas-unified.js`)
+- [ ] Thêm icon PWA thật (`data/icon-192.png`, `data/icon-512.png`)
+- [ ] **Hợp nhất nguồn trụ chung:** 2 module dùng chung dữ liệu trụ/đèn (cùng cây trụ) → gộp về 1 Spreadsheet/1 GAS/1 TaiKhoan trong `core-config.js` + `gas-unified.js`
