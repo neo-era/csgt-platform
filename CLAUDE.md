@@ -1,4 +1,4 @@
-# CLAUDE.md — CSGT Platform
+# CLAUDE.md — CSGT Platform (Xã Cần Giuộc)
 
 Hướng dẫn cho Claude Code (và lập trình viên) khi làm việc trong repo này.
 
@@ -6,13 +6,13 @@ Hướng dẫn cho Claude Code (và lập trình viên) khi làm việc trong re
 
 ## 1. Dự án là gì
 
-**CSGT Platform** — *Hệ thống Quản lý Chiếu sáng Công cộng* của CSCC TP.HCM.
+**CSGT Platform** — *Hệ thống Quản lý Chiếu sáng Công cộng* của **Xã Cần Giuộc**.
 Repo gộp của hai web app cùng tác giả (Mai Vũ Lâm), cùng hạ tầng, **giữ 2 module riêng**:
 
 | Module | Thư mục | Vai trò | Nguồn gốc |
 |---|---|---|---|
 | **Khảo sát** | `khaosat/` | Kiểm kê trụ–tủ–đèn trên bản đồ, GPS/RTK, xuất CAD VN2000, bản vẽ | `lighting-survey` cũ |
-| **Đèn tắt** | `dentat/` | Theo dõi đèn hư/tắt, biên bản sự cố, phối hợp TTQLHTKT, kênh người dân | `dentat` cũ |
+| **Đèn tắt** | `dentat/` | Theo dõi đèn hư/tắt, biên bản sự cố, phối hợp đơn vị quản lý hạ tầng, kênh người dân | `dentat` cũ |
 
 Hai module là **hai nửa của một vòng đời**: khảo sát *sinh ra* dữ liệu trụ → đèn tắt *theo dõi sự cố* trên cùng cây trụ đó.
 
@@ -106,18 +106,17 @@ Nạp theo thứ tự: **config → sync → (auth/map/image/geo/export)**. Tấ
 
 ## 5. Data model — Google Sheets
 
-Mỗi module có Spreadsheet riêng (sẽ hợp nhất sau). **Tuyệt đối không đổi tên cột Sheet đang chạy** — chỉ ánh xạ qua `fieldMap` trong `core-config.js`.
+**Cả 2 module DÙNG CHUNG 1 Spreadsheet** — Xã Cần Giuộc (doc id `1u1KIDPX5INt...` để GHI qua GAS; bản publish `2PACX-1vRzNnh...` = `PUB.CANGIUOC` để ĐỌC CSV). **Tuyệt đối không đổi tên cột Sheet đang chạy** — chỉ ánh xạ qua `fieldMap` trong `core-config.js`.
 
-### Khảo sát — sheet `DanhSachTru` (+ 14 tab địa bàn)
+### Khảo sát — tab `CanGiuoc` (gid 1149202043)
 25 cột: `ID, Tên trụ, Lat, Lon, Ghi chú, Người KS, Loại, Tủ điều khiển, Loại trụ, Loại cần, Loại đèn, Công suất, Ảnh, Thời gian cập nhật, Marker gốc, Khoảng cách (m), Mã PE, Đường, Phường/ Xã, VN2000-X, VN2000-Y, Số lượng đèn, Loại cáp, Độ chính xác (m), Chế độ GPS`.
-- Cần Giuộc ở **Spreadsheet ngoài** (`EXTERNAL_SPREADSHEET_IDS.CanGiuoc`).
-- ID có prefix theo địa bàn: TQ, Q1, Q3, …, CG (`CG_001`).
-- Sheet phụ: `TaiKhoan` (auth, có cột `vung`), `LichSu` (audit log).
+- ID có prefix địa bàn `CG` (vd `CG_001`). Đã bỏ toàn bộ địa bàn TP.HCM.
+- Sheet phụ chung: `TaiKhoan` (auth, có cột `vung`), `LichSu` (audit log).
 
-### Đèn tắt — sheet `DanhSachDen`
+### Đèn tắt — tab `DanhSachDen` (gid 887845918)
 20 cột, **có lỗi chính tả cố ý phải giữ nguyên**: `lontitude` (kinh độ), `Trang thai` (không dấu), `HÌnh ảnh` (Ì hoa).
 Đầy đủ: `ID, Số trụ, Tên tủ, latitude, lontitude, Loại đèn, Công suất, Trang thai, Đường, Phường, Ngày phát hiện, Người phát hiện, Ngày sửa, Người sửa, Vật tư sửa, HÌnh ảnh, Ghi chú, VN2000-X, VN2000-Y, Số điện thoại`.
-- Sheet phụ: `TaiKhoan`, `PhuTrach` (người ký biên bản theo phường).
+- Sheet phụ chung: `TaiKhoan`; `PhuTrach` (gid 1867964478, người ký biên bản theo phường).
 - Trạng thái 1–7 (`STATUS_CONFIG`): hư = {1,2,5,7}. Quick fix: 1/5→3, 7→4, 2→6.
 - Cột ngày ép TEXT (`@`) trong GAS để Sheets không đảo ngày/tháng (`DATE_TEXT_COLS`).
 - ID = `Date.now()`; `findRowNum` ưu tiên khớp ID, fallback Số trụ (để `bcsc` không ghi đè).
@@ -126,20 +125,13 @@ Mỗi module có Spreadsheet riêng (sẽ hợp nhất sau). **Tuyệt đối kh
 
 ## 6. Backend GAS
 
-Hiện **hai file GAS riêng** (chưa đưa vào repo này — sống trong Apps Script của từng Spreadsheet):
-- Khảo sát: `gas-khaosat.js` (CORS bật → client đọc JSON).
-- Đèn tắt: `gas.js` (client ghi bằng `no-cors`; login/upload đọc JSON).
+**Một Web App hợp nhất đã deploy:** `gas/gas-unified.js` phục vụ cả 2 module, định tuyến theo field `module` trong payload, **CORS bật** cho mọi response. `core-config.js` đã đặt `GAS.UNIFIED` + `GAS.USE_UNIFIED=true` → `gasFor()` trả URL chung; client đọc JSON (`readResponse:true`, đã bỏ `no-cors`). 2 module có shim tự chèn `module` vào mọi request.
 
-Cấu trúc giống nhau: `doPost` router theo `action` (`login`, `full_update`, `delete_row`, `upload_image`, …), `handleLogin` (đọc `TaiKhoan`), `findRowNum/updateRow/appendRow`, `handleImageUpload` (push GitHub).
+`doPost` router theo `action`: `login`, `change_credentials`, `full_update`, `delete_row`, `upload_image`, `github_write_file`, `log_action`; `findRowNum/updateRow/appendRow`, `handleImageUpload` (push GitHub).
 
-**Cần Script Property `GITHUB_TOKEN`** (scope `contents:write`) để upload ảnh.
+**Mật khẩu `TaiKhoan` lưu hash SHA-256** (`hashPassword`): đăng nhập đúng tự nâng cấp plaintext cũ → hash, hoặc chạy `migratePasswordsToHash()` một lần trong editor.
 
-### ⚠️ Việc còn lại: hợp nhất GAS
-Gộp 2 file thành **một Web App**, thêm tham số `module` để chọn `SHEET_NAME` + `FIELD_MAP` + repo ảnh; **bật CORS** cho mọi response. Sau đó trong `core-config.js`:
-```js
-GAS.UNIFIED = '<url web app mới>';
-GAS.USE_UNIFIED = true;   // gasFor() tự dùng URL chung; client đặt readResponse:true cho cả 2 module
-```
+**Script Properties:** `GITHUB_TOKEN` (scope `contents:write`, upload ảnh) + tùy chọn `AUTH_PEPPER` (đặt TRƯỚC khi migrate/login — đổi sau làm sai mọi hash cũ).
 
 ---
 
@@ -178,8 +170,9 @@ GAS.USE_UNIFIED = true;   // gasFor() tự dùng URL chung; client đặt readRe
 - **Không đổi tên cột Sheet** (`lontitude`, `Trang thai`, `HÌnh ảnh` là cố ý) — chỉ ánh xạ qua `fieldMap`.
 - **Đổi code GAS phải Deploy lại Web App** rồi cập nhật URL trong `core-config.js`.
 - **Đổi repo ảnh** → cập nhật `GITHUB.REPO_*` và giữ/migrate đường dẫn `raw.githubusercontent` cũ để không vỡ ảnh lịch sử.
-- **`bcsc.html` và `lichsu.html`** hiện còn dùng CSV/GAS inline riêng — chưa centralize (tùy chọn làm sau).
-- Mật khẩu trong `TaiKhoan` đang **plaintext** — khi hợp nhất nên hash.
+- **`bcsc.html` và `lichsu.html`** đã centralize về `core/` (endpoint từ `CSGT_CONFIG`, dùng `CSGT.sync/image/geo/export`).
+- Mật khẩu `TaiKhoan` lưu **hash SHA-256** trong `gas-unified.js` (xem mục 6) — không còn plaintext.
+- **Chạy test:** `npm test` (= `node tests/core.test.js`) — test thuần cho hàm lõi (CSV, VN2000, DXF), không cần cài đặt.
 
 ---
 
@@ -187,7 +180,10 @@ GAS.USE_UNIFIED = true;   // gasFor() tự dùng URL chung; client đặt readRe
 
 - [x] Giai đoạn 1 — chung hạ tầng (repo, core-config, PWA, CI)
 - [x] Giai đoạn 2 — tách 6 module core + chuyển UI cả 2 module sang dùng core
-- [x] GAS hợp nhất đã viết: `gas/gas-unified.js` (+ `gas/README.md`); 2 module đã có shim tự chèn `module`
-- [ ] **Deploy** `gas/gas-unified.js` (điền SPREADSHEET_IDS + GITHUB_TOKEN, Deploy Web App "Anyone")
-      rồi điền `GAS.UNIFIED` + bật `GAS.USE_UNIFIED=true` trong `core-config.js`
-- [ ] (Tù
+- [x] GAS hợp nhất `gas/gas-unified.js` đã deploy; `core-config.js` bật `GAS.USE_UNIFIED=true`
+- [x] 2 module dùng chung 1 Spreadsheet Cần Giuộc (đọc + ghi); đã bỏ dữ liệu TP.HCM
+- [x] Hash mật khẩu `TaiKhoan` (SHA-256 + auto-upgrade + `migratePasswordsToHash`)
+- [x] Centralize `bcsc.html`/`lichsu.html` về core; đèn tắt ghi bằng đọc-JSON (bỏ no-cors)
+- [x] Test harness lõi (`npm test`)
+- [ ] Smoke test thực tế + chạy `migratePasswordsToHash()` một lần sau deploy
+- [ ] Icon PWA thật (`data/icon-192.png`, `data/icon-512.png`)
