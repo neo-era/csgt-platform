@@ -14,13 +14,11 @@
   // ── Spreadsheet "publish to web" base (đọc dữ liệu dạng CSV) ───────────────
   // d/e/<PUB_ID>/pub?gid=<gid>&single=true&output=csv
   const PUB = {
-    // Spreadsheet CHUNG — Xã Cần Giuộc (cả 2 module đọc từ đây)
-    //   khảo sát: tab CanGiuoc  gid 1149202043
-    //   đèn tắt:  tab DanhSachDen gid 887845918
+    // Spreadsheet CHUNG — Xã Cần Giuộc (cả 2 module đọc TẤT CẢ từ đây)
+    //   khảo sát: tab CanGiuoc    gid 1149202043
+    //   đèn tắt:  tab DanhSachDen gid 887845918 · tab PhuTrach gid 1867964478
     // (pub id của doc 1u1KIDPX5INt... — chính là SHARED_SPREADSHEET_ID dùng để GHI qua GAS)
     CANGIUOC: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzNnhFDaoZgyX-jqCUuVkq0NsdqasekQd53CoaI3racianUs--NgA1ZWjkz1wKRoFrhmUuOaO2_7xA',
-    // Spreadsheet ĐÈN TẮT cũ — chỉ còn dùng cho tab PhuTrach (chưa có gid trong sheet chung)
-    DENTAT: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQC6mnGNSNDjUVzs5C4Se9Q9JQCGF9_YQRTRXewhsJhg0QDAcp6NqtxNsFl-fs8g1yyYBQEUqPhgwBv',
   };
 
   const csv = (base, gid) =>
@@ -35,8 +33,8 @@
     DENTAT:  'https://script.google.com/macros/s/AKfycbx0YAMrbBpNdTL0cmE_1LdQ7SJzeUW0J0VHhWpv3WqW9LvLyBTP8YV2nPzuuR27pJTZ8g/exec',
     // MỤC TIÊU Giai đoạn 1: hợp nhất về MỘT Web App, định tuyến theo `module`.
     // Khi đã gộp xong, đặt URL chung vào UNIFIED và bật USE_UNIFIED = true.
-    UNIFIED: '',
-    USE_UNIFIED: false,
+    UNIFIED: 'https://script.google.com/macros/s/AKfycbzv6jJ8ZZKkP0253kZCyye0F-NqKya5G206OPQ4AVYV2QQNlnn9ayE-pCKmzxpWI4EV/exec',
+    USE_UNIFIED: true,
   };
 
   // ── GitHub (lưu ảnh + file qua GAS proxy / Contents API) ───────────────────
@@ -108,7 +106,7 @@
     sheetMain: 'DanhSachDen',
     authSheet: 'TaiKhoan',
     csvUrl: csv(PUB.CANGIUOC, 887845918),    // tab DanhSachDen trong sheet CHUNG
-    phuTrachCsvUrl: csv(PUB.DENTAT, 2043665350), // tab PhuTrach (vẫn ở sheet cũ — chưa có gid trong sheet chung)
+    phuTrachCsvUrl: csv(PUB.CANGIUOC, 1867964478), // tab PhuTrach trong sheet CHUNG
     maxImgLen: 32767,
     // GIỮ NGUYÊN tên cột "lỗi" đang chạy thật: lontitude, Trang thai, HÌnh ảnh
     fieldMap: {
