@@ -80,7 +80,7 @@
     auditSheet: 'LichSu',
     idPrefix: { CanGiuoc: 'CG' },
     externalSpreadsheetIds: { CanGiuoc: '1u1KIDPX5INt-9bI6EDK-K6VKSCJAoey7drElKW3rLS0' },
-    // Địa bàn: chỉ Xã Cần Giuộc (đã bỏ toàn bộ địa bàn TP.HCM)
+    // Địa bàn: chỉ Xã Cần Giuộc (đã bỏ các địa bàn cũ)
     districts: [
       { label: 'Cần Giuộc', sheet: 'CanGiuoc', csvUrl: csv(PUB.CANGIUOC, 1149202043) },
     ],
