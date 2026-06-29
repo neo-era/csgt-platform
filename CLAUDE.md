@@ -110,7 +110,7 @@ Nạp theo thứ tự: **config → sync → (auth/map/image/geo/export)**. Tấ
 
 ### Khảo sát — tab `CanGiuoc` (gid 1149202043)
 25 cột: `ID, Tên trụ, Lat, Lon, Ghi chú, Người KS, Loại, Tủ điều khiển, Loại trụ, Loại cần, Loại đèn, Công suất, Ảnh, Thời gian cập nhật, Marker gốc, Khoảng cách (m), Mã PE, Đường, Phường/ Xã, VN2000-X, VN2000-Y, Số lượng đèn, Loại cáp, Độ chính xác (m), Chế độ GPS`.
-- ID có prefix địa bàn `CG` (vd `CG_001`). Đã bỏ toàn bộ địa bàn TP.HCM.
+- ID có prefix địa bàn `CG` (vd `CG_001`). Chỉ còn địa bàn Cần Giuộc (đã bỏ các địa bàn cũ).
 - Sheet phụ chung: `TaiKhoan` (auth, có cột `vung`), `LichSu` (audit log).
 
 ### Đèn tắt — tab `DanhSachDen` (gid 887845918)
@@ -181,7 +181,7 @@ Nạp theo thứ tự: **config → sync → (auth/map/image/geo/export)**. Tấ
 - [x] Giai đoạn 1 — chung hạ tầng (repo, core-config, PWA, CI)
 - [x] Giai đoạn 2 — tách 6 module core + chuyển UI cả 2 module sang dùng core
 - [x] GAS hợp nhất `gas/gas-unified.js` đã deploy; `core-config.js` bật `GAS.USE_UNIFIED=true`
-- [x] 2 module dùng chung 1 Spreadsheet Cần Giuộc (đọc + ghi); đã bỏ dữ liệu TP.HCM
+- [x] 2 module dùng chung 1 Spreadsheet Cần Giuộc (đọc + ghi); chỉ còn dữ liệu Cần Giuộc
 - [x] Hash mật khẩu `TaiKhoan` (SHA-256 + auto-upgrade + `migratePasswordsToHash`)
 - [x] Centralize `bcsc.html`/`lichsu.html` về core; đèn tắt ghi bằng đọc-JSON (bỏ no-cors)
 - [x] Test harness lõi (`npm test`)
