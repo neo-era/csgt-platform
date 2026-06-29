@@ -14,9 +14,12 @@
   // ── Spreadsheet "publish to web" base (đọc dữ liệu dạng CSV) ───────────────
   // d/e/<PUB_ID>/pub?gid=<gid>&single=true&output=csv
   const PUB = {
-    // Spreadsheet KHẢO SÁT — Xã Cần Giuộc (dùng chung dữ liệu trụ/đèn)
-    KHAOSAT_CANGIUOC: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzNnhFDaoZgyX-jqCUuVkq0NsdqasekQd53CoaI3racianUs--NgA1ZWjkz1wKRoFrhmUuOaO2_7xA',
-    // Spreadsheet ĐÈN TẮT (dentat)
+    // Spreadsheet CHUNG — Xã Cần Giuộc (cả 2 module đọc từ đây)
+    //   khảo sát: tab CanGiuoc  gid 1149202043
+    //   đèn tắt:  tab DanhSachDen gid 887845918
+    // (pub id của doc 1u1KIDPX5INt... — chính là SHARED_SPREADSHEET_ID dùng để GHI qua GAS)
+    CANGIUOC: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzNnhFDaoZgyX-jqCUuVkq0NsdqasekQd53CoaI3racianUs--NgA1ZWjkz1wKRoFrhmUuOaO2_7xA',
+    // Spreadsheet ĐÈN TẮT cũ — chỉ còn dùng cho tab PhuTrach (chưa có gid trong sheet chung)
     DENTAT: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQC6mnGNSNDjUVzs5C4Se9Q9JQCGF9_YQRTRXewhsJhg0QDAcp6NqtxNsFl-fs8g1yyYBQEUqPhgwBv',
   };
 
@@ -81,7 +84,7 @@
     externalSpreadsheetIds: { CanGiuoc: '1u1KIDPX5INt-9bI6EDK-K6VKSCJAoey7drElKW3rLS0' },
     // Địa bàn: chỉ Xã Cần Giuộc (đã bỏ toàn bộ địa bàn TP.HCM)
     districts: [
-      { label: 'Cần Giuộc', sheet: 'CanGiuoc', csvUrl: csv(PUB.KHAOSAT_CANGIUOC, 1149202043) },
+      { label: 'Cần Giuộc', sheet: 'CanGiuoc', csvUrl: csv(PUB.CANGIUOC, 1149202043) },
     ],
     // Ánh xạ key JS -> tên cột thật trên Sheet (KHÔNG đổi tên cột Sheet đang chạy)
     fieldMap: {
@@ -104,8 +107,8 @@
     githubRepo: GITHUB.REPO_DENTAT,
     sheetMain: 'DanhSachDen',
     authSheet: 'TaiKhoan',
-    csvUrl: csv(PUB.DENTAT),                 // tab DanhSachDen
-    phuTrachCsvUrl: csv(PUB.DENTAT, 2043665350), // tab PhuTrach
+    csvUrl: csv(PUB.CANGIUOC, 887845918),    // tab DanhSachDen trong sheet CHUNG
+    phuTrachCsvUrl: csv(PUB.DENTAT, 2043665350), // tab PhuTrach (vẫn ở sheet cũ — chưa có gid trong sheet chung)
     maxImgLen: 32767,
     // GIỮ NGUYÊN tên cột "lỗi" đang chạy thật: lontitude, Trang thai, HÌnh ảnh
     fieldMap: {
