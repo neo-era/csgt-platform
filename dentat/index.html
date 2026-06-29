@@ -2020,11 +2020,8 @@ async function deleteMarkerPopup() {
   const btn = document.getElementById('mpopDeleteBtn');
   btn.disabled = true; btn.textContent = '⏳ Đang xóa...';
   try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'delete_row', ...row })
-    });
+    const _res = await CSGT.sync.postToGas(GOOGLE_SCRIPT_URL, { action: 'delete_row', ...row }, { readResponse: true });
+    if (_res.status !== 'ok') throw new Error(_res.message || 'Xóa thất bại');
     const entry = markers[editingIndex];
     if (entry) {
       markersCluster.removeLayer(entry.marker);
@@ -2197,8 +2194,8 @@ async function saveMarkerPopup() {
     const payload = editingIndex !== null
       ? (() => { const r = { ...loadedData[editingIndex] }; applyFieldsToRow(r, rowData); return r; })()
       : rowData;
-    console.log('[GAS payload]', JSON.stringify(payload, null, 2));
-    await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const _res = await CSGT.sync.postToGas(GOOGLE_SCRIPT_URL, payload, { readResponse: true });
+    if (_res.status !== 'ok') throw new Error(_res.message || 'Lưu thất bại');
     if (editingIndex !== null) {
       loadedData[editingIndex] = payload;
       const entry = markers[editingIndex];
@@ -2249,9 +2246,9 @@ async function quickFix(index) {
   applyFilter(); updateStats(); buildFilterChips();
   showToast(`✅ Đã đánh dấu ${p.soTru} sửa xong hôm nay`);
   try {
-    console.log('[GAS quickFix payload]', JSON.stringify(rowData, null, 2));
-    await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rowData) });
-  } catch(e) {}
+    const _res = await CSGT.sync.postToGas(GOOGLE_SCRIPT_URL, rowData, { readResponse: true });
+    if (_res.status !== 'ok') throw new Error(_res.message || 'Lưu thất bại');
+  } catch(e) { showToast('⚠️ Chưa lưu được lên máy chủ: ' + e.message); }
 }
 
 // ── IMAGE ──
